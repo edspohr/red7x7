@@ -1,468 +1,578 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Red 7x7 — Maqueta Funcional de Valor</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal Red7x7 - Serverless</title>
+    <link rel="icon" href="https://via.placeholder.com/32" type="image/png" />
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <style> 
-        body { font-family: 'Inter', sans-serif; scroll-behavior: smooth; } 
-        .spinner{animation:spin .8s linear infinite;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;display:inline-block;vertical-align:middle;width:1rem;height:1rem}
-        @keyframes spin{to{transform:rotate(360deg)}}
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #f1f1f1; }
-        ::-webkit-scrollbar-thumb { background: #888; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #555; }
-        .gemini-btn {
-            background: linear-gradient(90deg, #4F46E5, #818CF8);
-            transition: all 0.3s ease;
-        }
-        .gemini-btn:hover {
-            box-shadow: 0 0 15px rgba(79, 70, 229, 0.5);
-        }
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .loader { border-top-color: #3498db; -webkit-animation: spinner 1.5s linear infinite; animation: spinner 1.5s linear infinite; }
+        @keyframes spinner { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
-<body class="bg-gray-100 text-gray-800">
+<body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
 
-<!-- === CONTENEDOR DE AUTENTICACIÓN === -->
-<div id="auth-container" class="min-h-screen flex items-center justify-center p-6 bg-gray-100">
-    <div class="w-full max-w-md">
-        <!-- PANTALLA DE LOGIN -->
-        <div id="login-screen" class="">
-            <div class="bg-white p-8 rounded-xl shadow-lg">
-                <h1 class="text-3xl font-bold text-gray-900 text-center">Bienvenido a Red 7x7</h1>
-                <p class="text-sm text-gray-600 mb-6 text-center">Ingresa a tu portal de socio.</p>
-                <form id="login-form" class="space-y-4">
-                    <div>
-                        <label for="login-email" class="text-sm font-medium text-gray-700">Email</label>
-                        <input id="login-email" name="email" type="email" required class="w-full mt-1 p-3 border rounded-lg bg-gray-50 focus:ring-2 focus:ring-blue-500" placeholder="tu@email.com" value="carlos.s@example.com">
-                    </div>
-                    <div>
-                        <label for="login-password" class="text-sm font-medium text-gray-700">Contraseña</label>
-                        <input id="login-password" name="password" type="password" required class="w-full mt-1 p-3 border rounded-lg bg-gray-50 focus:ring-2 focus:ring-blue-500" placeholder="••••••••" value="1234">
-                    </div>
-                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold transition-colors">Ingresar</button>
-                </form>
-                <div class="relative flex py-5 items-center">
-                    <div class="flex-grow border-t border-gray-300"></div><span class="flex-shrink mx-4 text-gray-400 text-sm">O</span><div class="flex-grow border-t border-gray-300"></div>
-                </div>
-                <button id="btn-google-login" class="w-full flex items-center justify-center gap-3 border border-gray-300 hover:bg-gray-50 text-gray-700 py-3 rounded-lg font-semibold transition-colors">
-                    <svg class="w-5 h-5" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12s5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24s8.955,20,20,20s20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"></path><path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"></path><path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"></path><path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571l6.19,5.238C39.712,34.464,44,28.756,44,20C44,22.659,43.862,21.35,43.611,20.083z"></path></svg>
-                    Iniciar sesión con Google
-                </button>
-                <p class="text-center text-sm text-gray-600 mt-6">¿No tienes una cuenta? <button id="btn-show-register" class="font-semibold text-blue-600 hover:underline">Regístrate aquí</button></p>
-            </div>
+    <!-- Notificaciones -->
+    <div id="notification-container" class="fixed top-4 right-4 z-50 flex flex-col gap-2"></div>
+
+    <!-- Pantalla de Carga -->
+    <div id="loading-screen" class="fixed inset-0 bg-white z-50 flex items-center justify-center hidden">
+        <div class="flex flex-col items-center">
+            <div class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-12 w-12 mb-4"></div>
+            <p class="text-gray-500 text-sm">Cargando Red7x7...</p>
         </div>
-        <div id="register-screen" class="hidden"><div class="bg-white p-8 rounded-xl shadow-lg"><h1 class="text-3xl font-bold text-gray-900 text-center">Crea tu cuenta</h1><p class="text-sm text-gray-600 mb-6 text-center">Únete a la red de networking.</p><form id="register-form" class="space-y-4"><div><label for="register-name" class="text-sm font-medium text-gray-700">Nombre Completo</label><input id="register-name" name="name" type="text" required class="w-full mt-1 p-3 border rounded-lg bg-gray-50 focus:ring-2 focus:ring-blue-500" placeholder="Tu Nombre"></div><div><label for="register-email" class="text-sm font-medium text-gray-700">Email</label><input id="register-email" name="email" type="email" required class="w-full mt-1 p-3 border rounded-lg bg-gray-50 focus:ring-2 focus:ring-blue-500" placeholder="tu@email.com"></div><div><label for="register-password" class="text-sm font-medium text-gray-700">Contraseña</label><input id="register-password" name="password" type="password" required class="w-full mt-1 p-3 border rounded-lg bg-gray-50 focus:ring-2 focus:ring-blue-500" placeholder="••••••••"></div><button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold transition-colors">Crear Cuenta</button></form><p class="text-center text-sm text-gray-600 mt-6">¿Ya tienes una cuenta? <button id="btn-show-login" class="font-semibold text-blue-600 hover:underline">Inicia sesión</button></p></div></div>
     </div>
-</div>
 
-<!-- === PORTAL DE USUARIO === -->
-<div id="app-screen" class="hidden min-h-screen">
-  <header class="bg-white shadow-md sticky top-0 z-30"><div class="max-w-7xl mx-auto flex items-center justify-between p-4"><h2 class="text-xl font-bold text-gray-800">Portal del Socio</h2><div class="flex items-center gap-4"><div class="hidden sm:block text-sm text-gray-600" id="header-user-name"></div><img id="header-avatar" class="w-10 h-10 rounded-full object-cover" src="" alt="avatar"><button id="btn-logout" class="text-gray-500 hover:text-red-600 transition-colors" title="Cerrar sesión"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg></button></div></div></header>
-  <main class="max-w-7xl mx-auto p-4 sm:p-6 grid grid-cols-1 lg:grid-cols-4 gap-6">
-    <aside class="bg-white p-5 rounded-lg shadow-lg col-span-1 lg:sticky lg:top-24 h-fit z-20"><div class="flex flex-col items-center sm:items-start sm:flex-row gap-4"><img id="profile-avatar" class="w-20 h-20 rounded-full object-cover" src="" alt="avatar"><div class="text-center sm:text-left"><div id="profile-name" class="font-bold text-lg"></div><div id="profile-role" class="text-sm text-gray-600"></div></div></div><div class="mt-5 border-t pt-4 space-y-3"><div><h4 class="text-xs font-semibold text-gray-500 uppercase">Sector</h4><div id="profile-sector" class="text-sm text-gray-800"></div></div><div><h4 class="text-xs font-semibold text-gray-500 uppercase">Intereses</h4><div id="profile-interests" class="text-sm text-gray-800"></div></div><div><h4 class="text-xs font-semibold text-gray-500 uppercase">Sobre mí</h4><p id="profile-bio" class="text-sm text-gray-800 break-words"></p></div></div><div class="mt-5 pt-4 border-t flex flex-col sm:flex-row gap-2"><button id="btn-edit-profile" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-semibold transition-colors">Editar Perfil</button></div></aside>
-    <section class="col-span-1 lg:col-span-3 space-y-6">
-        <div class="bg-white p-6 rounded-lg shadow-lg"><div class="flex justify-between items-center"><h3 class="text-xl font-bold text-gray-900">Pizarrón de Anuncios</h3><small class="text-xs text-gray-500">Publicado por administradores</small></div><div id="board-messages" class="mt-4 space-y-4 max-h-60 overflow-y-auto pr-2"></div></div>
-        <div class="bg-white p-6 rounded-lg shadow-lg"><h3 class="text-xl font-bold text-gray-900">Mi Historial de Reuniones</h3><p class="text-sm text-gray-600 mb-4">Revisa con quién te has conectado y accede a contenido exclusivo de cada sesión.</p><div id="meetings-list" class="space-y-6"></div></div>
-    </section>
-  </main>
-</div>
-
-<!-- === PANEL DE ADMINISTRADOR === -->
-<div id="admin-screen" class="hidden min-h-screen bg-gray-100">
-    <header class="bg-white shadow-md sticky top-0 z-20"><div class="max-w-7xl mx-auto p-4 flex justify-between items-center"><h2 class="text-xl font-bold text-red-600">Panel de Administración</h2><button id="admin-logout" class="text-gray-600 hover:text-red-600 transition-colors" title="Salir"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg></button></div></header>
-    <main class="max-w-7xl mx-auto p-6 space-y-6">
-        <div class="bg-white p-6 rounded-lg shadow-lg">
-            <h3 class="font-bold text-xl mb-4">Registro de Solicitudes de Contacto</h3>
-            <div id="admin-contact-requests" class="space-y-2 max-h-72 overflow-y-auto"></div>
-        </div>
-        <div class="bg-white p-6 rounded-lg shadow-lg">
-            <h3 class="font-bold text-xl mb-4">Gestionar Reuniones y Resúmenes</h3>
-            <div id="admin-meetings-list" class="space-y-3"></div>
-        </div>
-        <div class="bg-white p-6 rounded-lg shadow-lg">
-            <h3 class="font-bold text-xl mb-4">Directorio Completo de Socios</h3>
-            <div id="admin-member-directory" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
-        </div>
-        <div class="bg-white p-6 rounded-lg shadow-lg"><div class="flex justify-between items-center mb-4"><h3 class="font-bold text-xl">Gestionar Pizarrón</h3><button id="btn-new-board" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold transition-colors">Nuevo Anuncio</button></div><div id="admin-board-list" class="space-y-3"></div></div>
-        <div class="bg-white p-6 rounded-lg shadow-lg"><h3 class="font-bold text-xl mb-4">Gestionar Perfiles de Socios</h3><input id="admin-search" placeholder="Buscar socio por nombre o email..." class="w-full p-2 border rounded-lg mb-4 bg-gray-50 focus:ring-2 focus:ring-blue-500"><div class="overflow-x-auto"><table class="w-full text-sm"><thead class="bg-gray-100 text-left"><tr><th class="p-3 font-semibold">Nombre</th><th class="p-3 font-semibold">Email</th><th class="p-3 font-semibold">Sector</th><th class="p-3 font-semibold">Estado</th><th class="p-3 font-semibold text-right">Acciones</th></tr></thead><tbody id="admin-users-tbody"></tbody></table></div></div>
-    </main>
-</div>
-
-<!-- === MODAL GENÉRICO === -->
-<div id="modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-60 p-4 transition-opacity duration-300"><div id="modal-card" class="bg-white w-full max-w-2xl rounded-lg shadow-2xl transform transition-transform duration-300 scale-95 max-h-[90vh] overflow-y-auto"></div></div>
-
-<!-- === TOAST / NOTIFICACIÓN === -->
-<div id="toast" class="fixed right-6 bottom-6 hidden px-5 py-3 rounded-lg shadow-xl text-white font-semibold transition-all duration-300 z-50"></div>
-
-<script>
-/* ============================
-  ESTADO Y DATOS (Simulación)
- ============================ */
-const STORAGE_KEY = 'red7x7_maqueta_v9_admin';
-let state = {
-  currentUserId: null,
-  users: [
-    { id:1, nombre:'Carlos Santana', email:'carlos.s@example.com', password: '1234', sector:'Fintech', rol:'CEO y Fundador', intereses:'Inversión ángel, SaaS B2B, Blockchain', avatar:'https://placehold.co/120x120/D1FAE5/10B981?text=CS', estado:'Activo', bio:'Emprendedor en serie con más de 15 años de experiencia en el sector financiero. Apasionado por la tecnología y cómo puede resolver problemas reales. Busco activamente sinergias con otros sectores.'},
-    { id:2, nombre:'Laura Gómez', email:'laura.g@example.com', password: '1234', sector:'EdTech', rol:'Directora de Producto', intereses:'UX/UI, Inteligencia Artificial, Aprendizaje adaptativo', avatar:'https://placehold.co/120x120/DBEAFE/3B82F6?text=LG', estado:'Activo', bio:'Líder de producto con foco en crear experiencias educativas impactantes y accesibles para todos. Buscando siempre la próxima innovación en EdTech.'},
-    { id:3, nombre:'Pedro Ramos', email:'pedro.r@example.com', password: '1234', sector:'AgroTech', rol:'Fundador y CEO', intereses:'IoT, Drones, Sostenibilidad', avatar:'https://placehold.co/120x120/FEF3C7/F59E0B?text=PR', estado:'Pendiente', bio:'Ingeniero agrónomo convertido en emprendedor. Mi misión es optimizar el uso de recursos en el campo a través de la tecnología.'},
-    { id:4, nombre:'Ana Torres', email:'ana.t@example.com', password: '1234', sector:'HealthTech', rol:'Investigadora Principal', intereses:'Biotech, Data Science, Genómica', avatar:'https://placehold.co/120x120/FCE7F3/EC4899?text=AT', estado:'Activo', bio:'Científica dedicada a encontrar soluciones tecnológicas para los desafíos de la salud moderna. Abierta a colaboraciones interdisciplinarias.'},
-    { id: 5, nombre: 'Admin', email: 'admin@red7x7.cl', password: 'admin', rol: 'Administrador', estado: 'Activo' }
-  ],
-  meetings: [ { id:101, fecha:'2025-08-04', nombre:'Reunión 7x7 - Sinergias Fintech y EdTech', attendees:[1,2,4], resumen: null }, { id:102, fecha:'2025-07-28', nombre:'Reunión 7x7 - Innovación en AgroTech', attendees:[1,3], resumen: 'Pedro presentó los avances de su plataforma de monitoreo de cultivos con drones. Carlos vio una oportunidad para integrar soluciones de microcréditos para agricultores a través de la plataforma. Se acordó explorar la viabilidad técnica y financiera.' }, { id:103, fecha:'2025-07-15', nombre:'Reunión General de Networking', attendees:[1,2,3,4], resumen: null }, ],
-  boardMessages: [ { id: 'm1', title:'¡Bienvenida a la nueva plataforma!', body:'Estamos felices de lanzar esta nueva versión del portal. Explora los perfiles y no dudes en contactar a otros miembros. ¡El próximo encuentro será híbrido!', pinned:true, createdAt:Date.now()-1000*60*60*24*2 }, { id: 'm2', title:'Recordatorio: Reunión mensual', body:'Nuestra próxima reunión 7x7 será el último jueves del mes. Pronto enviaremos la invitación de calendario. ¡Preparen sus ideas!', pinned:false, createdAt:Date.now()-1000*60*60*24*5 }, ],
-  contactRequests: [
-      { fromUserId: 2, toUserId: 4, createdAt: Date.now() - 1000 * 60 * 60 * 3 }
-  ]
-};
-
-function loadState() { try { const raw = localStorage.getItem(STORAGE_KEY); if (raw) state = JSON.parse(raw); } catch(e){ console.warn('No se pudo cargar el estado', e); } }
-function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
-loadState();
-
-/* ============================
-  UTILIDADES DE UI
- ============================ */
-const $ = id => document.getElementById(id);
-function showToast(msg, type='success', duration = 3000) { const t = $('toast'); t.textContent = msg; t.className = 'fixed right-6 bottom-6 px-5 py-3 rounded-lg shadow-xl text-white font-semibold transition-all duration-300 z-50'; t.classList.add(type === 'success' ? 'bg-green-600' : type === 'error' ? 'bg-red-600' : 'bg-blue-600'); t.classList.remove('hidden'); t.style.opacity = 1; t.style.transform = 'translateY(0)'; setTimeout(()=> { t.style.opacity = 0; t.style.transform = 'translateY(20px)'; setTimeout(() => t.classList.add('hidden'), 300); }, duration); }
-function openModal(html) { const modal = $('modal'); const card = $('modal-card'); card.innerHTML = html; modal.classList.remove('hidden'); setTimeout(() => { modal.classList.add('bg-opacity-60'); card.classList.remove('scale-95'); }, 10); }
-function closeModal() { const modal = $('modal'); const card = $('modal-card'); modal.classList.remove('bg-opacity-60'); card.classList.add('scale-95'); setTimeout(() => { modal.classList.add('hidden'); card.innerHTML = ''; }, 300); }
-function openConfirmationModal(message, onConfirm) {
-    openModal(`
-        <div class="p-4 text-center">
-            <h3 class="text-lg font-medium text-gray-900">Confirmación Requerida</h3>
-            <p class="mt-2 text-sm text-gray-600">${message}</p>
-            <div class="mt-6 flex justify-center gap-4">
-                <button id="btn-confirm-cancel" class="px-4 py-2 rounded-lg border bg-gray-100 hover:bg-gray-200 font-semibold">Cancelar</button>
-                <button id="btn-confirm-action" class="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white font-semibold">Eliminar</button>
+    <!-- Pantalla de Autenticación -->
+    <div id="auth-screen" class="flex-grow flex items-center justify-center p-4 hidden">
+        <div class="bg-white p-8 rounded-lg shadow-lg max-w-md w-full border border-gray-100">
+            <div class="text-center mb-8">
+                <h1 class="text-3xl font-bold text-gray-700 mb-2">Red7x7</h1>
+                <p class="text-gray-500">Portal de Colaboración Profesional</p>
             </div>
-        </div>
-    `);
 
-    $('btn-confirm-cancel').addEventListener('click', closeModal);
-    $('btn-confirm-action').addEventListener('click', () => {
-        onConfirm();
-        closeModal();
-    }, { once: true });
-}
-
-
-/* ============================
-  SIMULACIÓN DE GEMINI API
- ============================ */
-async function callGemini(prompt) {
-    console.log("--- PROMPT A GEMINI (SIMULADO) ---");
-    console.log(prompt);
-    console.log("---------------------------------");
-    
-    await new Promise(resolve => setTimeout(resolve, 1500));
-
-    if (prompt.includes("resumen conciso y profesional")) {
-        return `Se llevó a cabo una productiva sesión de networking centrada en el tema de la reunión. Los participantes exploraron diversas sinergias y oportunidades de colaboración. Se destacaron los puntos de interés común y se acordó dar seguimiento a las conversaciones más prometedoras para materializar posibles proyectos conjuntos. El ambiente fue propicio para el intercambio de ideas y el fortalecimiento de la red.`;
-    }
-    if (prompt.includes("ideas de 'icebreakers'")) {
-        return `- Hola [Nombre del contacto], me pareció muy interesante tu perspectiva sobre [tema de la reunión]. Me encantaría saber más sobre tu trabajo en [sector del contacto].\n- ¡Qué tal, [Nombre del contacto]! Disfruté mucho nuestra conversación. Dado tu interés en [interés del contacto] y mi experiencia en [interés propio], creo que podríamos explorar [idea de colaboración]. ¿Te parece si lo conversamos?\n- [Nombre del contacto], un gusto haberte conocido. Vi que en tu perfil mencionas [detalle del perfil del contacto], y justo estoy trabajando en algo relacionado. ¿Tendrías 15 minutos la próxima semana para un café virtual?`;
-    }
-    return "Respuesta simulada de Gemini.";
-}
-
-/* ============================
-  LÓGICA DE AUTENTICACIÓN
- ============================ */
-function handleLogin(event) { event.preventDefault(); const email = event.target.email.value; const password = event.target.password.value; if (email === 'admin@red7x7.cl' && password === 'admin') { loginAsAdmin(); return; } const user = state.users.find(u => u.email === email && u.password === password); if (user && user.estado === 'Activo') { loginAsUser(user.id); } else if (user && user.estado !== 'Activo') { showToast('Tu cuenta está pendiente de activación.', 'error'); } else { showToast('Email o contraseña incorrectos.', 'error'); } }
-function handleRegister(event) { event.preventDefault(); const name = event.target.name.value; const email = event.target.email.value; const password = event.target.password.value; if (state.users.some(u => u.email === email)) { showToast('Este email ya está registrado.', 'error'); return; } const newUser = { id: Date.now(), nombre: name, email: email, password: password, sector: 'No definido', rol: 'Nuevo Miembro', intereses: '', avatar: `https://placehold.co/120x120/E0E7FF/4F46E5?text=${name.charAt(0)}`, estado: 'Pendiente', bio: '' }; state.users.push(newUser); saveState(); showToast('¡Registro exitoso! Tu cuenta será activada por un administrador.', 'success'); showLoginScreen(); }
-function handleGoogleLogin() { const user = state.users.find(u => u.estado === 'Activo'); if (user) { loginAsUser(user.id); showToast(`Inicio de sesión simulado con Google como ${user.nombre}`, 'info'); } else { showToast('No hay usuarios de demo para el login con Google.', 'error'); } }
-function showLoginScreen() { $('login-screen').classList.remove('hidden'); $('register-screen').classList.add('hidden'); }
-function showRegisterScreen() { $('login-screen').classList.add('hidden'); $('register-screen').classList.remove('hidden'); }
-function loginAsUser(id) { state.currentUserId = id; saveState(); $('auth-container').classList.add('hidden'); $('app-screen').classList.remove('hidden'); renderAllUserComponents(); }
-function loginAsAdmin() { state.currentUserId = 'admin'; $('auth-container').classList.add('hidden'); $('admin-screen').classList.remove('hidden'); renderAllAdminComponents(); }
-function logout() { state.currentUserId = null; saveState(); $('app-screen').classList.add('hidden'); $('admin-screen').classList.add('hidden'); $('auth-container').classList.remove('hidden'); showLoginScreen(); }
-
-/* ============================
-  RENDERIZADO
- ============================ */
-function getCurrentUser() { if (state.currentUserId === 'admin' || !state.currentUserId) return null; return state.users.find(u => u.id === state.currentUserId); }
-function renderAllUserComponents() { renderUserHeader(); renderUserProfile(); renderBoardPublic(); renderUserMeetings(); }
-function renderUserHeader() { const u = getCurrentUser(); if (!u) return; $('header-user-name').textContent = u.nombre; $('header-avatar').src = u.avatar; }
-function renderUserProfile() { const u = getCurrentUser(); if (!u) return; $('profile-avatar').src = u.avatar; $('profile-name').textContent = u.nombre; $('profile-role').textContent = u.rol; $('profile-sector').textContent = u.sector; $('profile-interests').textContent = u.intereses; $('profile-bio').textContent = u.bio || 'No hay información disponible.'; }
-
-function renderUserMeetings() {
-    const user = getCurrentUser();
-    const container = $('meetings-list');
-    if (!user) { container.innerHTML = ''; return; }
-    const myMeetings = state.meetings.filter(m => m.attendees.includes(user.id)).sort((a,b) => new Date(b.fecha) - new Date(a.fecha));
-    
-    if (!myMeetings.length) {
-        container.innerHTML = '<div class="text-sm text-gray-500 p-4 text-center">Aún no has asistido a ninguna reunión.</div>';
-        return;
-    }
-
-    container.innerHTML = myMeetings.map(m => {
-        return `
-        <div class="p-4 border rounded-lg bg-white">
-            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-                <div>
-                    <h4 class="font-semibold text-lg text-gray-800">${m.nombre}</h4>
-                    <div class="text-xs text-gray-500 mt-1">Fecha: ${new Date(m.fecha).toLocaleDateString('es-CL', { year: 'numeric', month: 'long', day: 'numeric' })}</div>
+            <!-- Login Form -->
+            <form id="login-form" class="space-y-4">
+                <h2 class="text-xl font-semibold mb-4">Iniciar Sesión</h2>
+                <input type="email" id="login-email" placeholder="Email" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" required>
+                <input type="password" id="login-password" placeholder="Contraseña" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" required>
+                <button type="submit" class="w-full bg-gray-800 text-white p-3 rounded-lg font-semibold hover:bg-gray-900 transition">Entrar</button>
+                <p class="text-center text-sm text-gray-500 mt-4">
+                    ¿No tienes cuenta? <a href="#" onclick="toggleAuthMode()" class="text-blue-600 hover:underline">Regístrate</a>
+                </p>
+                <div class="mt-6 pt-4 border-t border-gray-100 text-center">
+                    <p class="text-xs text-gray-400 mb-2">Datos de prueba (si ya cargaste la demo):</p>
+                    <button type="button" onclick="fillLogin('admin@red7x7.cl', 'changeme123')" class="text-xs bg-gray-100 px-2 py-1 rounded hover:bg-gray-200">Admin</button>
+                    <button type="button" onclick="fillLogin('pro@red7x7.cl', 'changeme123')" class="text-xs bg-gray-100 px-2 py-1 rounded hover:bg-gray-200">Pro</button>
                 </div>
-                ${m.resumen ? `<button class="btn-view-summary w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-semibold" data-meeting-id="${m.id}">Ver Resumen y Conexiones</button>` : `<div class="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">Resumen pendiente</div>`}
-            </div>
+            </form>
+
+            <!-- Register Form -->
+            <form id="register-form" class="space-y-4 hidden">
+                <h2 class="text-xl font-semibold mb-4">Crear Cuenta</h2>
+                <input type="text" id="reg-name" placeholder="Nombre Completo" class="w-full p-3 border rounded-lg" required>
+                <input type="email" id="reg-email" placeholder="Email" class="w-full p-3 border rounded-lg" required>
+                <input type="password" id="reg-password" placeholder="Contraseña" class="w-full p-3 border rounded-lg" required>
+                <input type="text" id="reg-company" placeholder="Empresa" class="w-full p-3 border rounded-lg">
+                <input type="text" id="reg-position" placeholder="Cargo" class="w-full p-3 border rounded-lg">
+                <button type="submit" class="w-full bg-blue-600 text-white p-3 rounded-lg font-semibold hover:bg-blue-700 transition">Registrarse</button>
+                <p class="text-center text-sm text-gray-500 mt-4">
+                    ¿Ya tienes cuenta? <a href="#" onclick="toggleAuthMode()" class="text-blue-600 hover:underline">Inicia sesión</a>
+                </p>
+            </form>
         </div>
-        `;
-    }).join('');
-}
+    </div>
 
-function renderAllAdminComponents() { renderAdminUsers(); renderAdminBoard(); renderAdminMeetings(); renderAdminContactRequests(); renderAdminDirectory(); }
-function renderAdminUsers(query='') { const tbody = $('admin-users-tbody'); const q = query.trim().toLowerCase(); const list = state.users.filter(u => u.rol !== 'Administrador' && (!q || u.nombre.toLowerCase().includes(q) || u.email.toLowerCase().includes(q))); tbody.innerHTML = list.map(u => `<tr class="border-b hover:bg-gray-50"><td class="p-3 font-medium">${u.nombre}</td><td class="p-3 text-xs text-gray-600">${u.email}</td><td class="p-3">${u.sector}</td><td class="p-3"><span class="px-2 py-1 text-xs rounded-full ${u.estado === 'Activo' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}">${u.estado}</span></td><td class="p-3 space-x-2 text-right"><button onclick="adminEditUser(${u.id})" class="text-blue-600 hover:underline">Editar</button><button onclick="adminToggleState(${u.id})" class="text-gray-600 hover:underline">${u.estado==='Activo'?'Desactivar':'Activar'}</button></td></tr>`).join(''); }
-function renderBoardPublic() { const container = $('board-messages'); if (!container) return; const html = state.boardMessages.sort((a,b)=>b.pinned - a.pinned || b.createdAt - a.createdAt).map(m => `<div class="p-4 border rounded-lg ${m.pinned ? 'border-yellow-400 bg-yellow-50' : 'border-gray-200'}"><div class="flex justify-between items-center"><div class="font-semibold text-gray-800">${m.pinned ? '📌 ' : ''}${m.title}</div><div class="text-xs text-gray-500">${new Date(m.createdAt).toLocaleDateString()}</div></div><div class="mt-1 text-sm text-gray-700">${m.body}</div></div>`).join(''); container.innerHTML = html || '<div class="text-sm text-gray-500 p-4 text-center">No hay anuncios en el pizarrón.</div>'; }
-function renderAdminBoard() { const list = $('admin-board-list'); list.innerHTML = state.boardMessages.sort((a,b)=>b.pinned - a.pinned || b.createdAt - a.createdAt).map(m => `<div class="p-3 border rounded-lg flex justify-between items-start ${m.pinned?'bg-yellow-50 border-yellow-300':''}"><div><div class="font-semibold">${m.pinned ? '📌 ' : ''}${m.title} <small class="text-xs text-gray-500 font-normal"> ${new Date(m.createdAt).toLocaleString()}</small></div><div class="text-sm text-gray-700 mt-1">${m.body}</div></div><div class="flex flex-col sm:flex-row gap-2 text-sm flex-shrink-0 ml-4"><button onclick="adminEditBoardMessage('${m.id}')" class="text-blue-600 hover:underline">Editar</button><button onclick="adminTogglePin('${m.id}')" class="text-gray-700 hover:underline">${m.pinned?'Quitar pin':'Fijar'}</button><button onclick="adminDeleteBoard('${m.id}')" class="text-red-600 hover:underline">Eliminar</button></div></div>`).join(''); }
-function renderAdminMeetings() {
-    const container = $('admin-meetings-list');
-    const meetings = state.meetings.sort((a,b) => new Date(b.fecha) - new Date(a.fecha));
-    container.innerHTML = meetings.map(m => `
-        <div class="p-3 border rounded-lg flex justify-between items-center">
-            <div>
-                <div class="font-semibold">${m.nombre}</div>
-                <div class="text-xs text-gray-500">Fecha: ${new Date(m.fecha).toLocaleDateString()}</div>
-            </div>
-            <button class="btn-manage-summary ${m.resumen ? 'bg-green-600 hover:bg-green-700' : 'gemini-btn'} text-white px-4 py-2 rounded-lg text-sm font-semibold" data-meeting-id="${m.id}">
-                ${m.resumen ? 'Editar Resumen' : '✨ Generar Resumen'}
-            </button>
-        </div>
-    `).join('');
-}
-function renderAdminContactRequests() {
-    const container = $('admin-contact-requests');
-    const requests = state.contactRequests.sort((a, b) => b.createdAt - a.createdAt);
-    if (!requests.length) {
-        container.innerHTML = '<p class="text-sm text-gray-500 text-center p-4">No hay solicitudes de contacto registradas.</p>';
-        return;
-    }
-    container.innerHTML = requests.map(r => {
-        const fromUser = state.users.find(u => u.id === r.fromUserId);
-        const toUser = state.users.find(u => u.id === r.toUserId);
-        if (!fromUser || !toUser) return '';
-        return `
-            <div class="p-2 border-b flex items-center justify-between text-sm">
-                <div>
-                    <span class="font-semibold">${fromUser.nombre}</span>
-                    <span class="text-gray-500">contactó a</span>
-                    <span class="font-semibold">${toUser.nombre}</span>
-                </div>
-                <div class="text-xs text-gray-500">${new Date(r.createdAt).toLocaleString()}</div>
-            </div>
-        `;
-    }).join('');
-}
-function renderAdminDirectory() {
-    const container = $('admin-member-directory');
-    const users = state.users.filter(u => u.rol !== 'Administrador');
-    container.innerHTML = users.map(u => `
-        <div class="p-4 border rounded-lg bg-white flex items-center gap-4">
-            <img src="${u.avatar}" class="w-16 h-16 rounded-full object-cover flex-shrink-0">
-            <div class="flex-grow">
-                <div class="font-bold text-md">${u.nombre}</div>
-                <div class="text-xs text-gray-500">${u.rol}</div>
-                <div class="text-sm text-gray-700 mt-1">${u.sector}</div>
-            </div>
-            <button class="btn-view-profile flex-shrink-0 bg-gray-200 hover:bg-gray-300 text-gray-800 px-3 py-2 rounded-lg text-sm font-semibold" data-user-id="${u.id}">
-                Ver Perfil
-            </button>
-        </div>
-    `).join('');
-}
-
-/* ============================
-  MANEJO DE EVENTOS Y MODALES
- ============================ */
-document.addEventListener('click', (e) => {
-    const viewProfileBtn = e.target.closest('.btn-view-profile'); if (viewProfileBtn) { closeModal(); setTimeout(() => showUserProfileModal(Number(viewProfileBtn.dataset.userId)), 350); }
-    const viewSummaryBtn = e.target.closest('.btn-view-summary'); if (viewSummaryBtn) { showMeetingSummaryModal(Number(viewSummaryBtn.dataset.meetingId)); }
-    const contactBtn = e.target.closest('.btn-modal-contact'); if (contactBtn) { handleContactRequest(Number(contactBtn.dataset.userId), contactBtn.dataset.userName); }
-    const manageSummaryBtn = e.target.closest('.btn-manage-summary'); if (manageSummaryBtn) { openSummaryEditorModal(Number(manageSummaryBtn.dataset.meetingId)); }
-    const generateIcebreakersBtn = e.target.closest('.btn-generate-icebreakers'); if (generateIcebreakersBtn) { generateContactIcebreakers(Number(generateIcebreakersBtn.dataset.meetingId), generateIcebreakersBtn); }
-});
-
-function handleContactRequest(toUserId, toUserName) {
-    const currentUser = getCurrentUser();
-    if (!currentUser) return;
-
-    state.contactRequests.push({
-        fromUserId: currentUser.id,
-        toUserId: toUserId,
-        createdAt: Date.now()
-    });
-    saveState();
-    
-    closeModal();
-    setTimeout(() => showToast(`Solicitud de contacto enviada a ${toUserName}.`, 'info'), 300);
-}
-
-function showUserProfileModal(userId) { const user = state.users.find(u => u.id === userId); if (!user) return; openModal(`<div class="p-4"><div class="flex flex-col sm:flex-row gap-6 items-center sm:items-start"><img src="${user.avatar}" class="w-28 h-28 rounded-full object-cover flex-shrink-0 border-4 border-white shadow-md"><div class="flex-grow text-center sm:text-left"><h3 class="text-2xl font-bold text-gray-900">${user.nombre}</h3><p class="text-md text-gray-600">${user.rol}</p><p class="text-sm text-blue-600 font-semibold mt-1">${user.sector}</p></div><button onclick="closeModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">&times;</button></div><div class="mt-6 border-t pt-4"><h4 class="font-semibold text-gray-800">Sobre mí:</h4><p class="mt-1 text-gray-700">${user.bio || 'Sin información.'}</p><h4 class="font-semibold text-gray-800 mt-4">Intereses:</h4><p class="mt-1 text-gray-700">${user.intereses}</p></div><div class="mt-6 pt-4 border-t flex justify-end"><button class="btn-modal-contact bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-lg" data-user-id="${user.id}" data-user-name="${user.nombre}">Quiero contactar</button></div></div>`); }
-function showMeetingSummaryModal(meetingId) {
-    const meeting = state.meetings.find(m => m.id === meetingId); if (!meeting) return;
-    const currentUser = getCurrentUser();
-    const attendees = meeting.attendees.map(id => state.users.find(u => u.id === id)).filter(Boolean);
-    const otherAttendees = attendees.filter(u => u.id !== currentUser.id);
-
-    openModal(`<div class="p-4"><h3 class="text-2xl font-bold text-gray-900">${meeting.nombre}</h3><p class="text-sm text-gray-500 mb-4">Fecha: ${new Date(meeting.fecha).toLocaleDateString()}</p><button onclick="closeModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">&times;</button><div class="grid grid-cols-1 md:grid-cols-3 gap-6"><div class="md:col-span-2"><h4 class="font-semibold text-gray-800">Resumen de la Reunión</h4><div class="mt-2 p-4 bg-gray-50 rounded-lg text-gray-700 text-sm">${meeting.resumen}</div><div class="mt-6"><h4 class="font-semibold text-gray-800 mb-2">✨ Ideas para Romper el Hielo</h4><div id="icebreakers-container"><button class="btn-generate-icebreakers gemini-btn text-white px-3 py-2 rounded-lg text-sm font-semibold" data-meeting-id="${meeting.id}">Generar Ideas de Contacto</button></div></div></div><div><h4 class="font-semibold text-gray-800">Conectaste con:</h4><div class="mt-2 space-y-2">${otherAttendees.length > 0 ? otherAttendees.map(a => `<div class="flex items-center justify-between gap-3 p-2 rounded-lg hover:bg-gray-100"><div class="flex items-center gap-3"><img src="${a.avatar}" class="w-10 h-10 rounded-full object-cover"><div><div class="font-semibold text-sm">${a.nombre}</div><div class="text-xs text-gray-500">${a.rol}</div></div></div><button class="btn-view-profile text-xs bg-blue-100 text-blue-800 hover:bg-blue-200 font-semibold px-3 py-1 rounded-full" data-user-id="${a.id}">Ver</button></div>`).join('') : '<p class="text-sm text-gray-500">No hubo otros asistentes en esta reunión.</p>'}</div></div></div></div>`);
-}
-$('btn-edit-profile').addEventListener('click', () => { const u = getCurrentUser(); if (!u) return; openModal(`<h3 class="text-xl font-bold mb-4">Editar Mi Perfil</h3><form id="edit-profile-form" class="space-y-4"><label class="block"><span class="text-sm font-medium text-gray-700">Nombre Completo</span><input name="nombre" value="${u.nombre}" class="w-full mt-1 p-2 border rounded-lg bg-gray-50"></label><label class="block"><span class="text-sm font-medium text-gray-700">Cargo / Rol</span><input name="rol" value="${u.rol}" class="w-full mt-1 p-2 border rounded-lg bg-gray-50"></label><label class="block"><span class="text-sm font-medium text-gray-700">Intereses (separados por comas)</span><input name="intereses" value="${u.intereses}" class="w-full mt-1 p-2 border rounded-lg bg-gray-50"></label><label class="block"><span class="text-sm font-medium text-gray-700">Sobre mí</span><textarea id="bio-textarea" name="bio" rows="4" class="w-full mt-1 p-2 border rounded-lg bg-gray-50">${u.bio || ''}</textarea></label><div class="flex justify-end gap-3 pt-4"><button type="button" onclick="closeModal()" class="px-4 py-2 rounded-lg border bg-gray-100 hover:bg-gray-200 font-semibold">Cancelar</button><button type="submit" class="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold">Guardar Cambios</button></div></form>`); $('edit-profile-form').addEventListener('submit', (ev) => { ev.preventDefault(); const form = new FormData(ev.target); const userIdx = state.users.findIndex(x => x.id === u.id); if (userIdx !== -1) { state.users[userIdx] = { ...state.users[userIdx], nombre: form.get('nombre'), rol: form.get('rol'), intereses: form.get('intereses'), bio: form.get('bio') }; saveState(); renderUserProfile(); renderUserHeader(); closeModal(); showToast('Perfil actualizado con éxito'); } }); });
-function adminEditUser(id) { const u = state.users.find(x=>x.id===id); if (!u) return; openModal(`<h3 class="text-lg font-bold">Editar Socio</h3><form id="admin-edit-user" class="space-y-3 mt-4"><input name="nombre" value="${u.nombre}" class="w-full p-2 border rounded-lg bg-gray-50"><input name="email" value="${u.email}" class="w-full p-2 border rounded-lg bg-gray-50"><input name="sector" value="${u.sector}" class="w-full p-2 border rounded-lg bg-gray-50"><select name="estado" class="w-full p-2 border rounded-lg bg-gray-50"><option ${u.estado==='Activo'?'selected':''}>Activo</option><option ${u.estado==='Pendiente'?'selected':''}>Pendiente</option><option ${u.estado==='Inactivo'?'selected':''}>Inactivo</option></select><div class="flex justify-end gap-2 pt-3"><button type="button" onclick="closeModal()" class="px-3 py-2 border rounded-lg">Cancelar</button><button class="px-3 py-2 bg-blue-600 text-white rounded-lg">Guardar</button></div></form>`); $('admin-edit-user').addEventListener('submit', (ev)=> { ev.preventDefault(); const fd = new FormData(ev.target); const idx = state.users.findIndex(x=>x.id===id); state.users[idx].nombre = fd.get('nombre'); state.users[idx].email = fd.get('email'); state.users[idx].sector = fd.get('sector'); state.users[idx].estado = fd.get('estado'); saveState(); renderAdminUsers(); closeModal(); showToast('Socio actualizado'); }); }
-function adminToggleState(id) { const u = state.users.find(x=>x.id===id); if (u) { u.estado = u.estado === 'Activo' ? 'Inactivo' : 'Activo'; saveState(); renderAdminUsers(); showToast(`Estado de ${u.nombre} actualizado a ${u.estado}`); } }
-function openBoardEditor(msg) { const isEdit = !!msg; openModal(`<h3 class="text-xl font-bold">${isEdit ? 'Editar' : 'Nuevo'} Anuncio</h3><form id="board-form" class="space-y-4 mt-4"><input name="title" placeholder="Título del anuncio" class="w-full p-2 border rounded-lg bg-gray-50" value="${msg?.title || ''}" required><textarea name="body" placeholder="Contenido del anuncio..." rows="5" class="w-full p-2 border rounded-lg bg-gray-50" required>${msg?.body || ''}</textarea><label class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-100 cursor-pointer"><input type="checkbox" name="pinned" class="h-5 w-5 text-blue-600" ${msg?.pinned ? 'checked' : ''}> <span class="font-medium">Fijar este anuncio (aparecerá primero)</span></label><div class="flex justify-end gap-3 pt-4"><button type="button" onclick="closeModal()" class="px-4 py-2 rounded-lg border bg-gray-100 hover:bg-gray-200 font-semibold">Cancelar</button><button type="submit" class="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold">${isEdit ? 'Guardar Cambios' : 'Publicar Anuncio'}</button></div></form>`); $('board-form').addEventListener('submit', (ev) => { ev.preventDefault(); const fd = new FormData(ev.target); const title = fd.get('title'); const body = fd.get('body'); if (!title || !body) { showToast('El título y el contenido no pueden estar vacíos', 'error'); return; } if (isEdit) { const existingMsg = state.boardMessages.find(m => m.id === msg.id); existingMsg.title = title; existingMsg.body = body; existingMsg.pinned = fd.get('pinned') === 'on'; } else { const newMsg = { id: 'm' + Date.now(), title: title, body: body, pinned: fd.get('pinned') === 'on', createdAt: Date.now() }; state.boardMessages.push(newMsg); } saveState(); renderAdminBoard(); renderBoardPublic(); closeModal(); showToast(`Anuncio ${isEdit ? 'actualizado' : 'publicado'} con éxito`); }); }
-function adminEditBoardMessage(id) { const msg = state.boardMessages.find(m=>m.id===id); if (msg) openBoardEditor(msg); }
-function adminTogglePin(id) { const msg = state.boardMessages.find(m=>m.id===id); if (msg) { msg.pinned = !msg.pinned; saveState(); renderAdminBoard(); renderBoardPublic(); showToast(msg.pinned ? 'Anuncio fijado' : 'Pin quitado del anuncio'); } }
-function adminDeleteBoard(id) {
-    openConfirmationModal(
-        '¿Estás seguro de que quieres eliminar este anuncio? Esta acción no se puede deshacer.',
-        () => {
-            state.boardMessages = state.boardMessages.filter(m => m.id !== id);
-            saveState();
-            renderAdminBoard();
-            renderBoardPublic();
-            showToast('Anuncio eliminado', 'error');
-        }
-    );
-}
-
-/* ============================
-  FUNCIONES CON IA DE GEMINI
- ============================ */
-async function openSummaryEditorModal(meetingId) {
-    const meeting = state.meetings.find(m => m.id === meetingId);
-    if (!meeting) return;
-    const attendees = meeting.attendees.map(id => state.users.find(u => u.id === id)).filter(Boolean);
-
-    openModal(`
-        <div class="p-4">
-            <h3 class="text-xl font-bold mb-2">Editor de Resumen de Reunión</h3>
-            <p class="text-sm text-gray-600 mb-4">${meeting.nombre}</p>
-            
-            <div class="mb-4">
-                <h4 class="font-semibold text-gray-700">Asistentes:</h4>
-                <div class="flex flex-wrap gap-2 mt-2">
-                    ${attendees.map(a => `<span class="text-xs bg-gray-200 text-gray-800 px-2 py-1 rounded-full">${a.nombre}</span>`).join('')}
-                </div>
-            </div>
-
-            <form id="summary-editor-form">
-                <textarea id="summary-textarea" name="summary" rows="10" class="w-full p-2 border rounded-lg bg-gray-50" placeholder="Genera un resumen con IA o escribe uno aquí..."></textarea>
-                <div id="summary-loader" class="hidden my-2 text-center"><span class="spinner"></span> Generando resumen...</div>
-                <div class="flex justify-between items-center mt-4">
-                    <button type="button" id="btn-generate-summary-admin" class="gemini-btn text-white px-3 py-2 rounded-lg text-sm font-semibold" data-meeting-id="${meeting.id}">
-                        ✨ Generar con IA
-                    </button>
-                    <div>
-                        <button type="button" onclick="closeModal()" class="px-4 py-2 rounded-lg border bg-gray-100 hover:bg-gray-200 font-semibold">Cancelar</button>
-                        <button type="submit" class="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold ml-2">Guardar y Publicar</button>
+    <!-- Pantalla Principal (Dashboard) -->
+    <div id="app-screen" class="flex-grow hidden">
+        <!-- Navbar -->
+        <nav class="bg-white shadow-sm sticky top-0 z-40">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between h-16">
+                    <div class="flex items-center">
+                        <span class="text-2xl font-bold text-gray-800">Red7x7</span>
                     </div>
+                    <div class="flex items-center space-x-4">
+                        <div class="text-right hidden sm:block">
+                            <div id="nav-user-name" class="font-medium text-gray-900">Usuario</div>
+                            <div id="nav-user-role" class="text-xs text-gray-500">Rol</div>
+                        </div>
+                        <button onclick="logout()" class="p-2 rounded-full hover:bg-gray-100 text-gray-600">
+                            <i data-lucide="log-out"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <main class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+            
+            <!-- Admin Panel (Solo visible para ADMIN) -->
+            <div id="admin-panel" class="hidden mb-8 bg-white p-6 rounded-lg shadow-sm border border-blue-100">
+                <h2 class="text-lg font-semibold text-blue-800 mb-4 flex items-center"><i data-lucide="shield" class="w-5 h-5 mr-2"></i> Panel de Administración</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Crear Anuncio -->
+                    <div class="border p-4 rounded-lg">
+                        <h3 class="font-medium mb-2">Publicar Anuncio</h3>
+                        <form id="create-announcement-form" class="flex flex-col gap-2">
+                            <textarea id="announcement-content" rows="2" class="w-full p-2 border rounded text-sm" placeholder="¿Qué quieres comunicar?" required></textarea>
+                            <div class="flex justify-between items-center">
+                                <label class="flex items-center text-sm text-gray-600">
+                                    <input type="checkbox" id="announcement-pinned" class="mr-2"> Fijar
+                                </label>
+                                <button type="submit" class="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700">Publicar</button>
+                            </div>
+                        </form>
+                    </div>
+                    <!-- Cargar Datos Demo -->
+                    <div class="border p-4 rounded-lg flex flex-col justify-center items-center text-center bg-gray-50">
+                        <h3 class="font-medium mb-2">Base de Datos</h3>
+                        <p class="text-sm text-gray-500 mb-3">Si la app está vacía, carga los datos de prueba.</p>
+                        <button onclick="seedDatabase()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 flex items-center">
+                            <i data-lucide="database" class="w-4 h-4 mr-2"></i> Cargar Datos Demo (Seed)
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                
+                <!-- Columna Izquierda: Anuncios y Reuniones -->
+                <div class="lg:col-span-2 space-y-6">
+                    <!-- Anuncios -->
+                    <div class="bg-white rounded-lg shadow-sm p-6">
+                        <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center"><i data-lucide="megaphone" class="w-5 h-5 mr-2"></i> Anuncios</h2>
+                        <div id="announcements-list" class="space-y-4">
+                            <p class="text-gray-500 italic">Cargando anuncios...</p>
+                        </div>
+                    </div>
+
+                    <!-- Reuniones -->
+                    <div class="bg-white rounded-lg shadow-sm p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-xl font-bold text-gray-800 flex items-center"><i data-lucide="calendar" class="w-5 h-5 mr-2"></i> Reuniones</h2>
+                            <button id="btn-create-meeting" onclick="showMeetingModal()" class="hidden text-sm bg-gray-800 text-white px-3 py-1 rounded hover:bg-gray-900">
+                                + Nueva
+                            </button>
+                        </div>
+                        <div id="meetings-list" class="space-y-4">
+                            <p class="text-gray-500 italic">No hay reuniones programadas.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Columna Derecha: Directorio y Solicitudes -->
+                <div class="space-y-6">
+                    <!-- Directorio -->
+                    <div class="bg-white rounded-lg shadow-sm p-6">
+                        <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center"><i data-lucide="users" class="w-5 h-5 mr-2"></i> Directorio</h2>
+                        <div id="directory-list" class="space-y-3 max-h-96 overflow-y-auto">
+                            <!-- Miembros aquí -->
+                        </div>
+                    </div>
+
+                    <!-- Solicitudes -->
+                    <div class="bg-white rounded-lg shadow-sm p-6">
+                        <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center"><i data-lucide="inbox" class="w-5 h-5 mr-2"></i> Solicitudes de Contacto</h2>
+                        <div id="requests-list" class="space-y-3">
+                            <p class="text-sm text-gray-500">No tienes solicitudes pendientes.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal Crear Reunión -->
+    <div id="meeting-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+        <div class="bg-white p-6 rounded-lg w-full max-w-md m-4">
+            <h3 class="text-lg font-bold mb-4">Nueva Reunión</h3>
+            <form id="create-meeting-form" class="space-y-3">
+                <input type="text" id="meeting-title" placeholder="Título" class="w-full p-2 border rounded" required>
+                <input type="datetime-local" id="meeting-date" class="w-full p-2 border rounded" required>
+                <textarea id="meeting-agenda" placeholder="Agenda" class="w-full p-2 border rounded" rows="3"></textarea>
+                <div class="flex justify-end space-x-2 mt-4">
+                    <button type="button" onclick="hideMeetingModal()" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Crear</button>
                 </div>
             </form>
         </div>
-    `);
+    </div>
 
-    const textarea = $('summary-textarea');
-    if (meeting.resumen) {
-        textarea.value = meeting.resumen;
-    }
+    <!-- Firebase Scripts (Modular) -->
+    <script type="module">
+        // ==========================================
+        // 1. CONFIGURACIÓN (PEGA TUS CLAVES AQUÍ)
+        // ==========================================
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut, updateProfile } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, collection, addDoc, getDocs, doc, setDoc, getDoc, query, where, orderBy, onSnapshot, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    $('btn-generate-summary-admin').addEventListener('click', async (e) => {
-        const btn = e.target;
-        const loader = $('summary-loader');
-        btn.disabled = true;
-        loader.classList.remove('hidden');
-
-        const attendeesInfo = attendees.map(a => `- ${a.nombre}, ${a.rol} del sector ${a.sector}.`).join('\n');
-        const prompt = `Actúa como un asistente ejecutivo experto en networking. Genera un resumen conciso y profesional para la siguiente reunión de la red "Red 7x7". El resumen debe capturar la esencia de la discusión y los posibles próximos pasos.\n\n**Título de la reunión:** ${meeting.nombre}\n**Fecha:** ${new Date(meeting.fecha).toLocaleDateString()}\n**Asistentes:**\n${attendeesInfo}\n\nGenera un resumen en un párrafo.`;
+        // --- ⚠️ REEMPLAZA ESTO CON LO QUE TE DIO FIREBASE ⚠️ ---
+        // Ve a Configuración del Proyecto -> General -> Tus apps -> SDK setup y configuración
+        const firebaseConfig = {
+              apiKey: "AIzaSyAMV4bCKku_Nwxn9ndwe9rzxGq2YZRKO7Q",
+              authDomain: "red7x7-portal.firebaseapp.com",
+              projectId: "red7x7-portal",
+              storageBucket: "red7x7-portal.firebasestorage.app",
+              messagingSenderId: "474621020194",
+              appId: "1:474621020194:web:b1b4fbd8639c97aa54627b"
+        };
         
-        const summary = await callGemini(prompt);
-        if (summary) {
-            textarea.value = summary.trim();
+        // Inicialización segura (si no has configurado, no explota, solo avisa)
+        let app, auth, db;
+        try {
+            if (!firebaseConfig.apiKey) throw new Error("Falta configuración");
+            app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+        } catch (e) {
+            console.error("Firebase no configurado:", e);
+            alert("¡Falta configurar Firebase! Abre el archivo index.html y pega tus credenciales en la línea 154.");
+        }
+
+        // ==========================================
+        // 2. ESTADO GLOBAL Y UTILIDADES
+        // ==========================================
+        let currentUser = null;
+        let currentUserData = null; // Datos adicionales de Firestore (rol, empresa)
+
+        const showScreen = (screenId) => {
+            ['loading-screen', 'auth-screen', 'app-screen'].forEach(id => {
+                document.getElementById(id).classList.add('hidden');
+            });
+            document.getElementById(screenId).classList.remove('hidden');
+        };
+
+        const showNotification = (msg, type = 'info') => {
+            const container = document.getElementById('notification-container');
+            const div = document.createElement('div');
+            const colors = type === 'error' ? 'bg-red-500' : type === 'success' ? 'bg-green-500' : 'bg-gray-800';
+            div.className = `${colors} text-white px-4 py-2 rounded shadow-lg text-sm animate-bounce`;
+            div.textContent = msg;
+            container.appendChild(div);
+            setTimeout(() => div.remove(), 3000);
+        };
+
+        window.toggleAuthMode = () => {
+            document.getElementById('login-form').classList.toggle('hidden');
+            document.getElementById('register-form').classList.toggle('hidden');
+        };
+
+        window.fillLogin = (email, pass) => {
+            document.getElementById('login-email').value = email;
+            document.getElementById('login-password').value = pass;
+        };
+
+        // ==========================================
+        // 3. LÓGICA DE AUTENTICACIÓN
+        // ==========================================
+        
+        // Registro
+        document.getElementById('register-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('reg-email').value;
+            const password = document.getElementById('reg-password').value;
+            const name = document.getElementById('reg-name').value;
+            const company = document.getElementById('reg-company').value;
+            const position = document.getElementById('reg-position').value;
+
+            try {
+                showScreen('loading-screen');
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+                
+                // Guardar datos extra en Firestore
+                await setDoc(doc(db, "users", user.uid), {
+                    name, email, company, position,
+                    role: 'MEMBER', // Por defecto
+                    membership: 'SOCIO7X7',
+                    createdAt: serverTimestamp()
+                });
+                
+                await updateProfile(user, { displayName: name });
+                showNotification("Cuenta creada con éxito", "success");
+            } catch (error) {
+                showScreen('auth-screen');
+                showNotification(error.message, "error");
+            }
+        });
+
+        // Login
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+
+            try {
+                showScreen('loading-screen');
+                await signInWithEmailAndPassword(auth, email, password);
+            } catch (error) {
+                showScreen('auth-screen');
+                showNotification("Error al iniciar sesión. Verifica tus credenciales.", "error");
+            }
+        });
+
+        // Logout
+        window.logout = () => signOut(auth);
+
+        // Listener de Estado de Auth
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                currentUser = user;
+                // Obtener rol y datos extra
+                const docRef = doc(db, "users", user.uid);
+                const docSnap = await getDoc(docRef);
+                
+                if (docSnap.exists()) {
+                    currentUserData = docSnap.data();
+                    initDashboard();
+                } else {
+                    // Si el usuario existe en Auth pero no en DB (raro, pero posible)
+                    currentUserData = { name: user.displayName, role: 'MEMBER' };
+                    initDashboard();
+                }
+            } else {
+                currentUser = null;
+                currentUserData = null;
+                showScreen('auth-screen');
+            }
+        });
+
+        // ==========================================
+        // 4. DASHBOARD Y DATOS
+        // ==========================================
+        
+        function initDashboard() {
+            showScreen('app-screen');
+            
+            // Actualizar UI usuario
+            document.getElementById('nav-user-name').textContent = currentUserData.name || currentUser.email;
+            document.getElementById('nav-user-role').textContent = currentUserData.role;
+            
+            // Mostrar controles admin si corresponde
+            if (currentUserData.role === 'ADMIN') {
+                document.getElementById('admin-panel').classList.remove('hidden');
+                document.getElementById('btn-create-meeting').classList.remove('hidden');
+            } else {
+                document.getElementById('admin-panel').classList.add('hidden');
+                document.getElementById('btn-create-meeting').classList.add('hidden');
+            }
+
+            // Cargar datos en tiempo real
+            loadAnnouncements();
+            loadDirectory();
+            loadMeetings();
+            loadRequests();
+            lucide.createIcons();
+        }
+
+        // --- ANUNCIOS ---
+        function loadAnnouncements() {
+            const q = query(collection(db, "announcements"), orderBy("createdAt", "desc"));
+            onSnapshot(q, (snapshot) => {
+                const container = document.getElementById('announcements-list');
+                container.innerHTML = '';
+                if (snapshot.empty) container.innerHTML = '<p class="text-gray-500 text-sm">No hay anuncios aún.</p>';
+                
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    const date = data.createdAt?.toDate().toLocaleDateString() || '';
+                    const pinnedHtml = data.pinned ? '<span class="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded ml-2">Fijado</span>' : '';
+                    
+                    const html = `
+                        <div class="border-b border-gray-100 pb-3 last:border-0">
+                            <div class="flex justify-between items-start mb-1">
+                                <p class="font-medium text-gray-900">${data.content}</p>
+                                ${pinnedHtml}
+                            </div>
+                            <p class="text-xs text-gray-400">${date}</p>
+                        </div>
+                    `;
+                    container.innerHTML += html;
+                });
+            });
+        }
+
+        document.getElementById('create-announcement-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const content = document.getElementById('announcement-content').value;
+            const pinned = document.getElementById('announcement-pinned').checked;
+            
+            try {
+                await addDoc(collection(db, "announcements"), {
+                    content, pinned, createdAt: serverTimestamp(), authorId: currentUser.uid
+                });
+                document.getElementById('create-announcement-form').reset();
+                showNotification("Anuncio publicado", "success");
+            } catch (e) { showNotification("Error publicando", "error"); }
+        });
+
+        // --- DIRECTORIO ---
+        function loadDirectory() {
+            const q = query(collection(db, "users"), orderBy("name"));
+            onSnapshot(q, (snapshot) => {
+                const container = document.getElementById('directory-list');
+                container.innerHTML = '';
+                
+                snapshot.forEach(doc => {
+                    const user = doc.data();
+                    if (doc.id === currentUser.uid) return; // No mostrarse a sí mismo
+
+                    let actionBtn = '';
+                    // Lógica simple de solicitud: Si soy PRO o Admin puedo solicitar
+                    if (currentUserData.role === 'ADMIN' || currentUserData.membership === 'PRO') {
+                        actionBtn = `<button onclick="requestContact('${doc.id}')" class="text-blue-600 hover:text-blue-800"><i data-lucide="user-plus" class="w-4 h-4"></i></button>`;
+                    }
+
+                    const badge = user.role === 'ADMIN' ? 'bg-purple-100 text-purple-800' : user.membership === 'PRO' ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-600';
+
+                    container.innerHTML += `
+                        <div class="flex items-center justify-between p-2 hover:bg-gray-50 rounded">
+                            <div>
+                                <p class="text-sm font-medium text-gray-900">${user.name}</p>
+                                <p class="text-xs text-gray-500">${user.company || ''} - ${user.position || ''}</p>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs px-2 py-1 rounded ${badge}">${user.role === 'ADMIN' ? 'Admin' : user.membership}</span>
+                                ${actionBtn}
+                            </div>
+                        </div>
+                    `;
+                });
+                lucide.createIcons();
+            });
+        }
+
+        // --- REUNIONES ---
+        function loadMeetings() {
+            const q = query(collection(db, "meetings"), orderBy("date", "asc"));
+            onSnapshot(q, (snapshot) => {
+                const container = document.getElementById('meetings-list');
+                container.innerHTML = '';
+                if (snapshot.empty) container.innerHTML = '<p class="text-gray-500 text-sm">No hay reuniones.</p>';
+
+                snapshot.forEach(doc => {
+                    const m = doc.data();
+                    const date = m.date ? new Date(m.date).toLocaleString() : 'Por definir';
+                    container.innerHTML += `
+                        <div class="border p-3 rounded-lg bg-gray-50">
+                            <h4 class="font-semibold text-gray-800">${m.title}</h4>
+                            <p class="text-sm text-gray-600 mt-1">${m.agenda || ''}</p>
+                            <div class="flex items-center mt-2 text-xs text-gray-500">
+                                <i data-lucide="clock" class="w-3 h-3 mr-1"></i> ${date}
+                            </div>
+                        </div>
+                    `;
+                });
+                lucide.createIcons();
+            });
         }
         
-        loader.classList.add('hidden');
-        btn.disabled = false;
-    });
+        // Exponer funciones al scope global (necesario para onclick en HTML module)
+        window.showMeetingModal = () => document.getElementById('meeting-modal').classList.remove('hidden');
+        window.hideMeetingModal = () => document.getElementById('meeting-modal').classList.add('hidden');
 
-    $('summary-editor-form').addEventListener('submit', (e) => {
-        e.preventDefault();
-        const newSummary = $('summary-textarea').value;
-        if (!newSummary.trim()) {
-            showToast("El resumen no puede estar vacío para publicar.", "error");
-            return;
+        document.getElementById('create-meeting-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const title = document.getElementById('meeting-title').value;
+            const date = document.getElementById('meeting-date').value;
+            const agenda = document.getElementById('meeting-agenda').value;
+
+            try {
+                await addDoc(collection(db, "meetings"), {
+                    title, date, agenda, createdBy: currentUser.uid, createdAt: serverTimestamp()
+                });
+                hideMeetingModal();
+                showNotification("Reunión creada", "success");
+            } catch (e) { showNotification("Error creando reunión", "error"); }
+        });
+
+        // --- SOLICITUDES ---
+        window.requestContact = async (targetId) => {
+            try {
+                // Verificar si ya existe (simplificado)
+                await addDoc(collection(db, "contact_requests"), {
+                    from: currentUser.uid,
+                    to: targetId,
+                    status: 'PENDING',
+                    fromName: currentUserData.name
+                });
+                showNotification("Solicitud enviada", "success");
+            } catch (e) { showNotification("Error enviando solicitud", "error"); }
+        };
+
+        function loadRequests() {
+            // Mostrar solicitudes dirigidas a mí
+            const q = query(collection(db, "contact_requests"), where("to", "==", currentUser.uid), where("status", "==", "PENDING"));
+            onSnapshot(q, (snapshot) => {
+                const container = document.getElementById('requests-list');
+                container.innerHTML = '';
+                if (snapshot.empty) container.innerHTML = '<p class="text-sm text-gray-500">No tienes solicitudes pendientes.</p>';
+
+                snapshot.forEach(doc => {
+                    const req = doc.data();
+                    container.innerHTML += `
+                        <div class="border p-3 rounded flex justify-between items-center bg-blue-50">
+                            <div>
+                                <p class="text-sm font-medium">${req.fromName}</p>
+                                <p class="text-xs text-gray-500">Quiere conectar</p>
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="handleReq('${doc.id}', 'APPROVED')" class="text-green-600 hover:bg-green-100 p-1 rounded"><i data-lucide="check" class="w-4 h-4"></i></button>
+                                <button onclick="handleReq('${doc.id}', 'REJECTED')" class="text-red-600 hover:bg-red-100 p-1 rounded"><i data-lucide="x" class="w-4 h-4"></i></button>
+                            </div>
+                        </div>
+                    `;
+                });
+                lucide.createIcons();
+            });
         }
-        const meetingIndex = state.meetings.findIndex(m => m.id === meetingId);
-        state.meetings[meetingIndex].resumen = newSummary;
-        saveState();
-        renderAdminMeetings();
-        renderUserMeetings(); // To update user view
-        closeModal();
-        showToast("Resumen guardado y publicado con éxito.");
-    });
-}
 
-async function generateContactIcebreakers(meetingId, btn) {
-    btn.disabled = true;
-    const container = $('icebreakers-container');
-    container.innerHTML = '<div class="flex items-center gap-2 text-gray-600 text-sm"><span class="spinner"></span> Generando ideas...</div>';
+        window.handleReq = async (id, status) => {
+            await updateDoc(doc(db, "contact_requests", id), { status });
+            showNotification(status === 'APPROVED' ? 'Aceptado' : 'Rechazado', 'success');
+        };
 
-    const meeting = state.meetings.find(m => m.id === meetingId);
-    const currentUser = getCurrentUser();
-    const otherAttendees = meeting.attendees.filter(id => id !== currentUser.id).map(id => state.users.find(u => u.id === id)).filter(Boolean);
+        // ==========================================
+        // 5. SEED DATA (Cargar datos de prueba)
+        // ==========================================
+        window.seedDatabase = async () => {
+            if(!confirm("¿Estás seguro? Esto creará usuarios y datos de prueba.")) return;
+            showScreen('loading-screen');
+            try {
+                // 1. Crear Usuarios en Firestore (No podemos crear Auth users por seguridad desde el cliente, 
+                // pero simularemos las entradas en DB para que el directorio se vea lleno).
+                // IMPORTANTE: El usuario actual se convertirá en ADMIN.
+                
+                await updateDoc(doc(db, "users", currentUser.uid), {
+                    role: 'ADMIN',
+                    membership: 'PRO',
+                    company: 'Red7x7 Admin',
+                    position: 'Director'
+                });
 
-    if (otherAttendees.length === 0) {
-        container.innerHTML = '<p class="text-sm text-gray-600">No hay otros asistentes en esta reunión para generar ideas.</p>';
-        return;
-    }
+                // Crear otros usuarios 'falsos' para el directorio
+                const dummyUsers = [
+                    { name: 'Pedro Pro', email: 'pro@red7x7.cl', role: 'PRO', membership: 'PRO', company: 'Innovar SpA', position: 'Gerente' },
+                    { name: 'Maria Socia', email: 'maria@red7x7.cl', role: 'MEMBER', membership: 'SOCIO7X7', company: 'StartUp XYZ', position: 'Fundadora' },
+                    { name: 'Juan Dev', email: 'juan@dev.cl', role: 'MEMBER', membership: 'SOCIO7X7', company: 'Tech Solutions', position: 'CTO' }
+                ];
 
-    const currentUserProfile = `Mi Perfil: Soy ${currentUser.nombre}, ${currentUser.rol} en el sector ${currentUser.sector}. Mis intereses son ${currentUser.intereses}.`;
-    const otherProfiles = otherAttendees.map(u => `Perfil de ${u.nombre}: Es ${u.rol} en el sector ${u.sector}. Sus intereses son ${u.intereses}.`).join('\n');
-    const meetingSummary = `Resumen de la reunión "${meeting.nombre}": ${meeting.resumen}`;
+                for (const u of dummyUsers) {
+                    // Usamos email como ID falso solo para visualización
+                    await setDoc(doc(db, "users", u.email.replace(/[^a-zA-Z0-9]/g, '')), u);
+                }
 
-    const prompt = `Actúa como un coach de networking experto. Quiero contactar a las personas con las que estuve en una reunión.
-    
-    ${currentUserProfile}
-    
-    Estos son los perfiles de los otros asistentes:
-    ${otherProfiles}
-    
-    Este fue el resumen de la reunión:
-    ${meetingSummary}
-    
-    Basado en toda esta información, dame 2 o 3 ideas de "icebreakers" o formas de iniciar una conversación con ellos. Las ideas deben ser específicas, personalizadas y orientadas a crear valor. Formatea tu respuesta como una lista de puntos (usando guiones -).`;
+                // 2. Anuncios
+                await addDoc(collection(db, "announcements"), {
+                    content: 'Bienvenidos al nuevo portal Red7x7 Serverless. Todo funciona en tiempo real.',
+                    pinned: true,
+                    createdAt: serverTimestamp(),
+                    authorId: currentUser.uid
+                });
+                
+                // 3. Reuniones
+                await addDoc(collection(db, "meetings"), {
+                    title: 'Reunión de Lanzamiento',
+                    agenda: 'Revisar nueva plataforma y funcionalidades.',
+                    date: new Date().toISOString(),
+                    createdBy: currentUser.uid
+                });
 
-    const ideas = await callGemini(prompt);
+                showNotification("¡Datos cargados! Ahora eres ADMIN.", "success");
+                window.location.reload();
+            } catch (e) {
+                console.error(e);
+                showNotification("Error en seed: " + e.message, "error");
+                showScreen('app-screen');
+            }
+        };
 
-    if (ideas) {
-        const formattedIdeas = ideas.split('- ').filter(line => line.trim() !== '').map(line => `
-            <div class="p-3 bg-indigo-50 border border-indigo-200 rounded-lg text-sm text-gray-800">
-                - ${line.trim().replace(/\[Nombre del contacto\]/g, '<strong class="text-indigo-700">[Nombre del contacto]</strong>')}
-            </div>`).join('');
-        container.innerHTML = `<div class="space-y-2">${formattedIdeas}</div>`;
-    } else {
-        container.innerHTML = '<p class="text-sm text-red-600">No se pudieron generar las ideas en este momento.</p>';
-        btn.disabled = false;
-    }
-}
-
-
-/* ============================
-  INICIALIZACIÓN
- ============================ */
-document.addEventListener('DOMContentLoaded', () => {
-    $('login-form').addEventListener('submit', handleLogin);
-    $('register-form').addEventListener('submit', handleRegister);
-    $('btn-google-login').addEventListener('click', handleGoogleLogin);
-    $('btn-show-register').addEventListener('click', showRegisterScreen);
-    $('btn-show-login').addEventListener('click', showLoginScreen);
-    $('btn-logout').addEventListener('click', logout);
-    $('admin-logout').addEventListener('click', logout);
-    $('admin-search').addEventListener('input', (e) => { renderAdminUsers(e.target.value); });
-    $('btn-new-board').addEventListener('click', ()=> openBoardEditor());
-});
-</script>
+    </script>
 </body>
 </html>
