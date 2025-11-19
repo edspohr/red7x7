@@ -13,7 +13,6 @@
         body { font-family: 'Inter', sans-serif; }
         .loader { border-top-color: #3498db; -webkit-animation: spinner 1.5s linear infinite; animation: spinner 1.5s linear infinite; }
         @keyframes spinner { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        /* Estilos para ocultar scrollbar pero permitir scroll */
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
@@ -49,10 +48,6 @@
                 <p class="text-center text-sm text-gray-500 mt-4">
                     ¿No tienes cuenta? <a href="#" onclick="toggleAuthMode()" class="text-blue-600 hover:underline">Regístrate</a>
                 </p>
-                <div class="mt-6 pt-4 border-t border-gray-100 text-center bg-yellow-50 p-2 rounded">
-                    <p class="text-xs text-gray-600 font-medium mb-1">ℹ️ Primer ingreso:</p>
-                    <p class="text-xs text-gray-500">Regístrate con tu correo. Luego usa el botón "Cargar Datos Demo" adentro para volverte Admin.</p>
-                </div>
             </form>
 
             <!-- Register Form -->
@@ -82,12 +77,15 @@
                         <span class="text-2xl font-bold text-gray-800">Red7x7</span>
                     </div>
                     <div class="flex items-center space-x-4">
-                        <div class="text-right hidden sm:block">
-                            <div id="nav-user-name" class="font-medium text-gray-900">Usuario</div>
-                            <div id="nav-user-role" class="text-xs px-2 py-0.5 rounded bg-gray-200 text-gray-700 font-semibold">Rol</div>
+                        <button onclick="openProfileModal()" class="text-sm text-gray-600 hover:text-blue-600 font-medium flex items-center">
+                            <i data-lucide="user-circle" class="w-5 h-5 mr-1"></i> Mi Perfil
+                        </button>
+                        <div class="text-right hidden sm:block border-l pl-4 ml-2">
+                            <div id="nav-user-name" class="font-medium text-gray-900 text-sm">Usuario</div>
+                            <div id="nav-user-role" class="text-xs px-2 py-0.5 rounded bg-gray-200 text-gray-700 font-semibold inline-block">Rol</div>
                         </div>
                         <button onclick="logout()" class="p-2 rounded-full hover:bg-gray-100 text-gray-600" title="Salir">
-                            <i data-lucide="log-out"></i>
+                            <i data-lucide="log-out" class="w-5 h-5"></i>
                         </button>
                     </div>
                 </div>
@@ -102,12 +100,12 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <!-- Crear Anuncio -->
                     <div class="border p-4 rounded-lg bg-white col-span-1 md:col-span-2">
-                        <h3 class="font-medium mb-2 text-gray-700">📢 Publicar Anuncio Oficial</h3>
+                        <h3 class="font-medium mb-2 text-gray-700">📢 Publicar Anuncio</h3>
                         <form id="create-announcement-form" class="flex flex-col gap-2">
-                            <textarea id="announcement-content" rows="2" class="w-full p-2 border rounded text-sm focus:ring-1 focus:ring-blue-500 outline-none" placeholder="¿Qué quieres comunicar a la red?" required></textarea>
+                            <textarea id="announcement-content" rows="2" class="w-full p-2 border rounded text-sm focus:ring-1 focus:ring-blue-500 outline-none" placeholder="¿Qué quieres comunicar?" required></textarea>
                             <div class="flex justify-between items-center">
                                 <label class="flex items-center text-sm text-gray-600 cursor-pointer">
-                                    <input type="checkbox" id="announcement-pinned" class="mr-2"> Fijar al inicio
+                                    <input type="checkbox" id="announcement-pinned" class="mr-2"> Fijar
                                 </label>
                                 <button type="submit" class="bg-blue-600 text-white px-4 py-1.5 rounded text-sm hover:bg-blue-700 font-medium">Publicar</button>
                             </div>
@@ -116,12 +114,12 @@
                     
                     <!-- Acciones Admin -->
                     <div class="border p-4 rounded-lg flex flex-col gap-2 bg-gray-50">
-                        <h3 class="font-medium mb-2 text-gray-700">⚙️ Gestión</h3>
+                        <h3 class="font-medium mb-2 text-gray-700">⚙️ Herramientas</h3>
                         <button onclick="bulkUploadUsers()" class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 flex items-center justify-center text-sm w-full">
-                            <i data-lucide="users" class="w-4 h-4 mr-2"></i> Carga Masiva Usuarios
+                            <i data-lucide="upload-cloud" class="w-4 h-4 mr-2"></i> Carga Masiva (Demo)
                         </button>
                         <button onclick="seedDatabase()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 flex items-center justify-center text-sm w-full mt-auto">
-                            <i data-lucide="database" class="w-4 h-4 mr-2"></i> Resetear / Cargar Demo
+                            <i data-lucide="refresh-cw" class="w-4 h-4 mr-2"></i> Resetear App
                         </button>
                     </div>
                 </div>
@@ -134,9 +132,7 @@
                     <!-- Anuncios -->
                     <div class="bg-white rounded-lg shadow-sm p-6">
                         <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center"><i data-lucide="megaphone" class="w-5 h-5 mr-2"></i> Anuncios</h2>
-                        <div id="announcements-list" class="space-y-4">
-                            <p class="text-gray-500 italic">Cargando anuncios...</p>
-                        </div>
+                        <div id="announcements-list" class="space-y-4"></div>
                     </div>
 
                     <!-- Reuniones -->
@@ -147,28 +143,31 @@
                                 <i data-lucide="plus" class="w-3 h-3 mr-1"></i> Nueva
                             </button>
                         </div>
-                        <div id="meetings-list" class="space-y-4">
-                            <p class="text-gray-500 italic">No hay reuniones programadas.</p>
-                        </div>
+                        <div id="meetings-list" class="space-y-4"></div>
                     </div>
                 </div>
 
                 <!-- Columna Derecha: Directorio y Solicitudes -->
                 <div class="space-y-6">
                     <!-- Directorio -->
-                    <div class="bg-white rounded-lg shadow-sm p-6 flex flex-col h-[500px]">
+                    <div class="bg-white rounded-lg shadow-sm p-6 flex flex-col h-[600px]">
                         <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center justify-between">
                             <span class="flex items-center"><i data-lucide="users" class="w-5 h-5 mr-2"></i> Directorio</span>
                             <span class="text-xs font-normal text-gray-500 bg-gray-100 px-2 py-1 rounded">
                                 <span id="directory-count">0</span> miembros
                             </span>
                         </h2>
-                        <input type="text" id="directory-search" placeholder="Buscar por nombre o empresa..." class="w-full p-2 border rounded mb-3 text-sm">
+                        <input type="text" id="directory-search" placeholder="Buscar..." class="w-full p-2 border rounded mb-3 text-sm">
                         <div id="directory-list" class="space-y-3 overflow-y-auto flex-grow pr-1 no-scrollbar">
                             <!-- Miembros aquí -->
                         </div>
-                        <div id="pro-upgrade-msg" class="hidden mt-3 p-3 bg-yellow-50 rounded text-xs text-yellow-800 border border-yellow-200 text-center">
-                            🔒 Hazte <b>PRO</b> para ver detalles y solicitar contacto.
+                        
+                        <!-- Mensaje de Upgrade -->
+                        <div id="pro-upgrade-msg" class="hidden mt-3 p-4 bg-yellow-50 rounded text-center border border-yellow-200">
+                            <p class="text-xs text-yellow-800 mb-2">🔒 Hazte <b>PRO</b> para ver detalles y solicitar contacto.</p>
+                            <a href="https://calendly.com/rodrigo-red7x7" target="_blank" class="block w-full bg-yellow-500 hover:bg-yellow-600 text-white text-sm font-bold py-2 rounded transition shadow-sm">
+                                ¡Quiero ser PRO!
+                            </a>
                         </div>
                     </div>
 
@@ -190,48 +189,133 @@
         </main>
     </div>
 
+    <!-- MODALES -->
+
     <!-- Modal Crear Reunión -->
     <div id="meeting-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
-        <div class="bg-white p-6 rounded-lg w-full max-w-md m-4 shadow-xl transform transition-all">
+        <div class="bg-white p-6 rounded-lg w-full max-w-md m-4 shadow-xl">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-lg font-bold text-gray-800">Nueva Reunión</h3>
-                <button onclick="hideMeetingModal()" class="text-gray-400 hover:text-gray-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+                <button onclick="closeModal('meeting-modal')" class="text-gray-400 hover:text-gray-600"><i data-lucide="x" class="w-5 h-5"></i></button>
             </div>
             <form id="create-meeting-form" class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Título</label>
-                    <input type="text" id="meeting-title" placeholder="Ej: Desayuno Networking" class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 outline-none" required>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Fecha y Hora</label>
-                    <input type="datetime-local" id="meeting-date" class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 outline-none" required>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Agenda / Resumen</label>
-                    <textarea id="meeting-agenda" placeholder="Temas a tratar..." class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 outline-none" rows="3"></textarea>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Participantes (Emails separados por coma)</label>
-                    <input type="text" id="meeting-participants" placeholder="juan@ejemplo.com, maria@ejemplo.com" class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 outline-none text-sm">
-                    <p class="text-xs text-gray-500 mt-1">Los PRO verán los detalles de estas personas.</p>
-                </div>
+                <input type="text" id="meeting-title" placeholder="Título" class="w-full p-2 border rounded" required>
+                <input type="datetime-local" id="meeting-date" class="w-full p-2 border rounded" required>
+                <textarea id="meeting-agenda" placeholder="Resumen / Agenda..." class="w-full p-2 border rounded" rows="3"></textarea>
+                <input type="text" id="meeting-participants" placeholder="Participantes (separados por coma)" class="w-full p-2 border rounded text-sm">
                 <div class="flex justify-end space-x-2 pt-2">
-                    <button type="button" onclick="hideMeetingModal()" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded font-medium text-sm">Cancelar</button>
-                    <button type="submit" class="px-4 py-2 bg-gray-800 text-white rounded hover:bg-gray-900 font-medium text-sm">Crear Reunión</button>
+                    <button type="button" onclick="closeModal('meeting-modal')" class="px-4 py-2 text-gray-600 rounded hover:bg-gray-100 text-sm">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 bg-gray-800 text-white rounded hover:bg-gray-900 text-sm">Crear</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- Firebase Scripts (Modular) -->
+    <!-- Modal Perfil Usuario -->
+    <div id="profile-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+        <div class="bg-white p-6 rounded-lg w-full max-w-md m-4 shadow-xl">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-gray-800">Mi Perfil</h3>
+                <button onclick="closeModal('profile-modal')" class="text-gray-400 hover:text-gray-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <form id="profile-form" class="space-y-3">
+                <div>
+                    <label class="text-xs font-semibold text-gray-500 uppercase">Nombre</label>
+                    <input type="text" id="profile-name" class="w-full p-2 border rounded" required>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-xs font-semibold text-gray-500 uppercase">Empresa</label>
+                        <input type="text" id="profile-company" class="w-full p-2 border rounded">
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold text-gray-500 uppercase">Cargo</label>
+                        <input type="text" id="profile-position" class="w-full p-2 border rounded">
+                    </div>
+                </div>
+                <div>
+                    <label class="text-xs font-semibold text-gray-500 uppercase">Teléfono</label>
+                    <input type="text" id="profile-phone" class="w-full p-2 border rounded">
+                </div>
+                <div>
+                    <label class="text-xs font-semibold text-gray-500 uppercase">Biografía / Descripción</label>
+                    <textarea id="profile-bio" rows="3" class="w-full p-2 border rounded" placeholder="Cuéntanos qué haces..."></textarea>
+                </div>
+                <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Guardar Cambios</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Gestión Admin (Solo Admin) -->
+    <div id="admin-user-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+        <div class="bg-white p-6 rounded-lg w-full max-w-sm m-4 shadow-xl border-t-4 border-purple-600">
+            <h3 class="text-lg font-bold text-gray-800 mb-2">Gestionar Usuario</h3>
+            <p id="admin-target-name" class="text-sm text-gray-500 mb-4 font-medium"></p>
+            
+            <input type="hidden" id="admin-target-id">
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 mb-1">ROL DE SISTEMA</label>
+                    <select id="admin-role-select" class="w-full p-2 border rounded bg-gray-50">
+                        <option value="MEMBER">Usuario Normal</option>
+                        <option value="ADMIN">Administrador</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 mb-1">MEMBRESÍA</label>
+                    <select id="admin-membership-select" class="w-full p-2 border rounded bg-gray-50">
+                        <option value="SOCIO7X7">Socio 7x7 (Gratis)</option>
+                        <option value="PRO">Plan PRO</option>
+                    </select>
+                </div>
+                <div class="pt-2 border-t">
+                    <label class="flex items-center cursor-pointer">
+                        <input type="checkbox" id="admin-active-check" class="sr-only peer">
+                        <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
+                        <span class="ms-3 text-sm font-medium text-gray-900">Usuario Activo</span>
+                    </label>
+                </div>
+                <button onclick="saveUserManagement()" class="w-full bg-purple-600 text-white py-2 rounded hover:bg-purple-700 mt-4">Guardar Configuración</button>
+                <button onclick="closeModal('admin-user-modal')" class="w-full text-gray-500 py-2 text-sm hover:text-gray-700">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Ver Datos de Contacto -->
+    <div id="contact-info-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+        <div class="bg-white p-6 rounded-lg w-full max-w-sm m-4 shadow-xl text-center">
+            <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3 text-blue-600">
+                <i data-lucide="user" class="w-6 h-6"></i>
+            </div>
+            <h3 id="contact-name" class="text-xl font-bold text-gray-800">Nombre</h3>
+            <p id="contact-company" class="text-sm text-gray-500 mb-4">Empresa</p>
+            
+            <div class="bg-gray-50 p-4 rounded text-left space-y-3 mb-4 border">
+                <div>
+                    <p class="text-xs text-gray-400 uppercase font-bold">Correo Electrónico</p>
+                    <p id="contact-email" class="text-gray-800 font-medium select-all">email@ejemplo.com</p>
+                </div>
+                <div>
+                    <p class="text-xs text-gray-400 uppercase font-bold">Teléfono</p>
+                    <p id="contact-phone" class="text-gray-800 font-medium select-all">+56 9 ...</p>
+                </div>
+                <div>
+                    <p class="text-xs text-gray-400 uppercase font-bold">Biografía</p>
+                    <p id="contact-bio" class="text-gray-600 text-sm italic">Sin descripción.</p>
+                </div>
+            </div>
+            <button onclick="closeModal('contact-info-modal')" class="bg-gray-800 text-white px-6 py-2 rounded hover:bg-gray-900 w-full">Cerrar</button>
+        </div>
+    </div>
+
+    <!-- Firebase Scripts -->
     <script type="module">
-        // ==========================================
-        // 1. CONFIGURACIÓN FIREBASE
-        // ==========================================
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut, updateProfile } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { getFirestore, collection, addDoc, getDocs, doc, setDoc, getDoc, query, where, orderBy, onSnapshot, updateDoc, serverTimestamp, writeBatch } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
+        // TUS DATOS
         const firebaseConfig = {
           apiKey: "AIzaSyAMV4bCKku_Nwxn9ndwe9rzxGq2YZRKO7Q",
           authDomain: "red7x7-portal.firebaseapp.com",
@@ -247,20 +331,20 @@
             auth = getAuth(app);
             db = getFirestore(app);
         } catch (e) {
-            console.error("Firebase config error:", e);
-            alert("Error conectando a Firebase. Revisa la consola.");
+            console.error("Error:", e);
         }
 
         // ==========================================
-        // 2. ESTADO GLOBAL
+        // ESTADO
         // ==========================================
         let currentUser = null;
         let currentUserData = null; 
-        let allUsersCache = []; // Cache para búsqueda local
+        let allUsersCache = [];
+        let approvedContactsCache = new Set(); // IDs de usuarios aprobados para PRO
 
         const REQUESTS_LIMIT_PRO = 5;
 
-        // Utilidades UI
+        // UI Utils
         const showScreen = (screenId) => {
             ['loading-screen', 'auth-screen', 'app-screen'].forEach(id => document.getElementById(id).classList.add('hidden'));
             document.getElementById(screenId).classList.remove('hidden');
@@ -270,13 +354,10 @@
             const container = document.getElementById('notification-container');
             const div = document.createElement('div');
             const colors = type === 'error' ? 'bg-red-500' : type === 'success' ? 'bg-green-500' : 'bg-gray-800';
-            div.className = `${colors} text-white px-4 py-3 rounded shadow-lg text-sm flex items-center animate-fade-in-down transform transition-all`;
-            div.innerHTML = `<span>${msg}</span>`;
+            div.className = `${colors} text-white px-4 py-3 rounded shadow-lg text-sm flex items-center animate-pulse`;
+            div.textContent = msg;
             container.appendChild(div);
-            setTimeout(() => {
-                div.style.opacity = '0';
-                setTimeout(() => div.remove(), 300);
-            }, 3000);
+            setTimeout(() => div.remove(), 3000);
         };
 
         window.toggleAuthMode = () => {
@@ -284,11 +365,12 @@
             document.getElementById('register-form').classList.toggle('hidden');
         };
 
+        window.closeModal = (id) => document.getElementById(id).classList.add('hidden');
+
         // ==========================================
-        // 3. AUTHENTICATION
+        // AUTH
         // ==========================================
         
-        // Registro
         document.getElementById('register-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = document.getElementById('reg-email').value;
@@ -302,24 +384,25 @@
                 const userCredential = await createUserWithEmailAndPassword(auth, email, password);
                 const user = userCredential.user;
                 
-                // Crear perfil en Firestore
                 await setDoc(doc(db, "users", user.uid), {
                     name, email, company, position,
-                    role: 'MEMBER', // Por defecto SOCIO7x7 (Gratis)
+                    role: 'MEMBER',
                     membership: 'SOCIO7X7',
+                    isActive: true,
+                    bio: '',
+                    phone: '',
                     createdAt: serverTimestamp(),
-                    emailLowerCase: email.toLowerCase() // Para búsquedas
+                    emailLowerCase: email.toLowerCase()
                 });
                 
                 await updateProfile(user, { displayName: name });
-                showNotification("¡Bienvenido! Tu cuenta ha sido creada.", "success");
+                showNotification("Cuenta creada.", "success");
             } catch (error) {
                 showScreen('auth-screen');
                 showNotification(error.message, "error");
             }
         });
 
-        // Login
         document.getElementById('login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = document.getElementById('login-email').value;
@@ -330,25 +413,30 @@
                 await signInWithEmailAndPassword(auth, email, password);
             } catch (error) {
                 showScreen('auth-screen');
-                showNotification("Credenciales incorrectas.", "error");
+                showNotification("Error de inicio de sesión.", "error");
             }
         });
 
         window.logout = () => signOut(auth);
 
-        // Auth State Listener
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 currentUser = user;
-                const docRef = doc(db, "users", user.uid);
-                const docSnap = await getDoc(docRef);
+                const docSnap = await getDoc(doc(db, "users", user.uid));
                 
                 if (docSnap.exists()) {
                     currentUserData = docSnap.data();
+                    // Verificar si está activo
+                    if (currentUserData.isActive === false) {
+                        signOut(auth);
+                        showNotification("Tu cuenta ha sido desactivada por el administrador.", "error");
+                        return;
+                    }
+                    await loadApprovedContacts();
                     initDashboard();
                 } else {
-                    // Fallback recuperación
-                    currentUserData = { name: user.displayName || user.email, role: 'MEMBER', membership: 'SOCIO7X7' };
+                    // Recuperación simple
+                    currentUserData = { name: user.email, role: 'MEMBER', membership: 'SOCIO7X7', isActive: true };
                     initDashboard();
                 }
             } else {
@@ -358,25 +446,28 @@
             }
         });
 
+        // Cargar contactos aprobados (para PRO)
+        async function loadApprovedContacts() {
+            approvedContactsCache.clear();
+            const q = query(collection(db, "contact_requests"), 
+                where("from", "==", currentUser.uid), 
+                where("status", "==", "APPROVED")
+            );
+            const snap = await getDocs(q);
+            snap.forEach(doc => approvedContactsCache.add(doc.data().to));
+        }
+
         // ==========================================
-        // 4. DASHBOARD LOGIC
+        // DASHBOARD
         // ==========================================
         
         function initDashboard() {
             showScreen('app-screen');
             
-            // Actualizar Header
-            document.getElementById('nav-user-name').textContent = currentUserData.name || currentUser.email;
-            
-            // Badge de Rol
+            document.getElementById('nav-user-name').textContent = currentUserData.name;
             const roleEl = document.getElementById('nav-user-role');
             roleEl.textContent = currentUserData.role === 'ADMIN' ? 'ADMIN' : currentUserData.membership;
-            roleEl.className = `text-xs px-2 py-0.5 rounded font-bold ${
-                currentUserData.role === 'ADMIN' ? 'bg-purple-100 text-purple-800' :
-                currentUserData.membership === 'PRO' ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-200 text-gray-600'
-            }`;
-
-            // Visibilidad según rol
+            
             const isAdmin = currentUserData.role === 'ADMIN';
             const isPro = currentUserData.membership === 'PRO' || isAdmin;
 
@@ -388,74 +479,57 @@
                 document.getElementById('btn-create-meeting').classList.add('hidden');
             }
 
-            // Mensajes para MEMBER
             if (!isPro) {
                 document.getElementById('pro-upgrade-msg').classList.remove('hidden');
+                document.getElementById('pro-requests-info').classList.add('hidden');
             } else {
                 document.getElementById('pro-upgrade-msg').classList.add('hidden');
                 document.getElementById('pro-requests-info').classList.remove('hidden');
                 updateRequestsCount();
             }
 
-            // Cargar datos
             loadAnnouncements();
             loadDirectory();
             loadMeetings();
             loadRequests();
-            
             lucide.createIcons();
         }
 
-        // --- ANUNCIOS ---
-        function loadAnnouncements() {
-            const q = query(collection(db, "announcements"), orderBy("createdAt", "desc"));
-            onSnapshot(q, (snapshot) => {
-                const container = document.getElementById('announcements-list');
-                container.innerHTML = '';
-                if (snapshot.empty) container.innerHTML = '<p class="text-gray-400 text-sm text-center py-4">No hay anuncios oficiales.</p>';
-                
-                snapshot.forEach(doc => {
-                    const data = doc.data();
-                    const date = data.createdAt?.toDate().toLocaleDateString() || '';
-                    const pinnedHtml = data.pinned ? '<i data-lucide="pin" class="w-3 h-3 text-blue-500 mr-1 inline"></i>' : '';
-                    const bgClass = data.pinned ? 'bg-blue-50 border-blue-100' : 'bg-white border-gray-100';
-                    
-                    const html = `
-                        <div class="border rounded-lg p-3 ${bgClass}">
-                            <div class="flex justify-between items-start mb-1">
-                                <div class="font-medium text-gray-800 text-sm">${pinnedHtml} ${data.content}</div>
-                            </div>
-                            <div class="flex justify-between items-center mt-2">
-                                <span class="text-xs text-gray-400">${date}</span>
-                                ${currentUserData.role === 'ADMIN' ? 
-                                    `<button onclick="deleteDocFirestore('announcements', '${doc.id}')" class="text-red-400 hover:text-red-600"><i data-lucide="trash-2" class="w-3 h-3"></i></button>` 
-                                    : ''}
-                            </div>
-                        </div>
-                    `;
-                    container.innerHTML += html;
-                });
-                lucide.createIcons();
-            });
-        }
+        // ==========================================
+        // PERFIL DE USUARIO
+        // ==========================================
+        window.openProfileModal = () => {
+            document.getElementById('profile-name').value = currentUserData.name || '';
+            document.getElementById('profile-company').value = currentUserData.company || '';
+            document.getElementById('profile-position').value = currentUserData.position || '';
+            document.getElementById('profile-phone').value = currentUserData.phone || '';
+            document.getElementById('profile-bio').value = currentUserData.bio || '';
+            document.getElementById('profile-modal').classList.remove('hidden');
+        };
 
-        document.getElementById('create-announcement-form').addEventListener('submit', async (e) => {
+        document.getElementById('profile-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            if (currentUserData.role !== 'ADMIN') return; // Seguridad front
-            
-            const content = document.getElementById('announcement-content').value;
-            const pinned = document.getElementById('announcement-pinned').checked;
-            
             try {
-                await addDoc(collection(db, "announcements"), {
-                    content, pinned, createdAt: serverTimestamp(), authorId: currentUser.uid
-                });
-                document.getElementById('create-announcement-form').reset();
-                showNotification("Anuncio publicado", "success");
-            } catch (e) { showNotification("Error publicando", "error"); }
+                const updates = {
+                    name: document.getElementById('profile-name').value,
+                    company: document.getElementById('profile-company').value,
+                    position: document.getElementById('profile-position').value,
+                    phone: document.getElementById('profile-phone').value,
+                    bio: document.getElementById('profile-bio').value
+                };
+                
+                await updateDoc(doc(db, "users", currentUser.uid), updates);
+                currentUserData = { ...currentUserData, ...updates }; // Actualizar local
+                document.getElementById('nav-user-name').textContent = updates.name;
+                closeModal('profile-modal');
+                showNotification("Perfil actualizado", "success");
+            } catch(e) { showNotification("Error al guardar", "error"); }
         });
 
-        // --- DIRECTORIO (Reglas de Visibilidad) ---
+        // ==========================================
+        // DIRECTORIO & GESTIÓN ADMIN
+        // ==========================================
+        
         function loadDirectory() {
             const q = query(collection(db, "users"), orderBy("name"));
             onSnapshot(q, (snapshot) => {
@@ -467,11 +541,7 @@
 
         document.getElementById('directory-search').addEventListener('input', (e) => {
             const term = e.target.value.toLowerCase();
-            const filtered = allUsersCache.filter(u => 
-                u.name.toLowerCase().includes(term) || 
-                (u.company && u.company.toLowerCase().includes(term))
-            );
-            renderDirectory(filtered);
+            renderDirectory(allUsersCache.filter(u => u.name.toLowerCase().includes(term) || (u.company && u.company.toLowerCase().includes(term))));
         });
 
         function renderDirectory(users) {
@@ -483,51 +553,65 @@
             const isPro = currentUserData.membership === 'PRO' || isAdmin;
 
             users.forEach(user => {
-                if (user.id === currentUser.uid) return; // No mostrarse a sí mismo
+                if (user.id === currentUser.uid) return;
 
-                let actionArea = '';
+                let actionBtn = '';
                 
-                // Lógica de visualización de datos sensibles
-                // Si eres Admin, ves todo. Si eres Pro, puedes solicitar. Si eres Member, solo ves nombre/cargo.
-                
+                // Lógica de botones
                 if (isAdmin) {
-                    // Admin ve todo y puede promover
-                    actionArea = `
-                        <div class="flex gap-2">
-                            <button onclick="makeAdmin('${user.id}')" class="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded hover:bg-purple-200" title="Hacer Admin">Admin</button>
-                            <a href="mailto:${user.email}" class="text-gray-400 hover:text-blue-600"><i data-lucide="mail" class="w-4 h-4"></i></a>
+                    // Admin: Gestionar + Ver Datos
+                    actionBtn = `
+                        <div class="flex gap-1">
+                            <button onclick="openAdminManage('${user.id}')" class="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs border border-gray-300 hover:bg-gray-200 flex items-center">
+                                <i data-lucide="settings" class="w-3 h-3 mr-1"></i> Gestionar
+                            </button>
+                            <button onclick="viewContact('${user.id}')" class="bg-blue-50 text-blue-600 px-2 py-1 rounded text-xs border border-blue-100 hover:bg-blue-100 flex items-center">
+                                <i data-lucide="eye" class="w-3 h-3 mr-1"></i> Ver Datos
+                            </button>
                         </div>
                     `;
                 } else if (isPro) {
-                    // Pro ve botón de solicitud
-                    actionArea = `<button onclick="requestContact('${user.id}', '${user.name}')" class="text-blue-600 hover:bg-blue-50 p-1.5 rounded transition" title="Solicitar Contacto"><i data-lucide="user-plus" class="w-4 h-4"></i></button>`;
+                    // PRO: Ver datos si aprobado, sino Solicitar
+                    if (approvedContactsCache.has(user.id)) {
+                        actionBtn = `
+                            <button onclick="viewContact('${user.id}')" class="bg-green-50 text-green-700 px-3 py-1 rounded text-xs border border-green-200 hover:bg-green-100 flex items-center">
+                                <i data-lucide="eye" class="w-3 h-3 mr-1"></i> Ver Datos
+                            </button>
+                        `;
+                    } else {
+                        actionBtn = `
+                            <button onclick="requestContact('${user.id}', '${user.name}')" class="text-blue-600 hover:bg-blue-50 p-1.5 rounded transition" title="Solicitar Contacto">
+                                <i data-lucide="user-plus" class="w-4 h-4"></i>
+                            </button>
+                        `;
+                    }
                 } else {
-                    // Member (Gratis) ve candado
-                    actionArea = `<span class="text-gray-300" title="Solo PRO"><i data-lucide="lock" class="w-4 h-4"></i></span>`;
+                    // Member: Candado
+                    actionBtn = `<span class="text-gray-300" title="Solo PRO"><i data-lucide="lock" class="w-4 h-4"></i></span>`;
                 }
 
-                const roleBadge = user.role === 'ADMIN' 
-                    ? '<span class="text-[10px] bg-purple-100 text-purple-800 px-1.5 py-0.5 rounded border border-purple-200">ADMIN</span>' 
-                    : user.membership === 'PRO' 
-                        ? '<span class="text-[10px] bg-yellow-100 text-yellow-800 px-1.5 py-0.5 rounded border border-yellow-200">PRO</span>' 
-                        : '';
+                const statusDot = user.isActive !== false ? '<span class="w-2 h-2 rounded-full bg-green-500 inline-block ml-1" title="Activo"></span>' : '<span class="w-2 h-2 rounded-full bg-red-500 inline-block ml-1" title="Inactivo"></span>';
+                
+                const badgeRole = user.role === 'ADMIN' ? '<span class="text-[10px] bg-purple-100 text-purple-800 px-1 border border-purple-200 rounded">ADMIN</span>' : '';
+                const badgeMem = user.membership === 'PRO' ? '<span class="text-[10px] bg-yellow-100 text-yellow-800 px-1 border border-yellow-200 rounded">PRO</span>' : '';
 
                 container.innerHTML += `
-                    <div class="flex items-center justify-between p-3 border border-gray-100 rounded-lg hover:bg-gray-50 transition bg-white">
+                    <div class="flex items-center justify-between p-3 border border-gray-100 rounded-lg hover:bg-gray-50 bg-white ${user.isActive===false ? 'opacity-50 grayscale' : ''}">
                         <div class="flex items-center space-x-3 overflow-hidden">
                             <div class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-gray-600 shrink-0">
                                 ${user.name.substring(0,2).toUpperCase()}
                             </div>
                             <div class="min-w-0">
-                                <div class="flex items-center gap-2">
+                                <div class="flex items-center gap-1">
                                     <p class="text-sm font-semibold text-gray-900 truncate">${user.name}</p>
-                                    ${roleBadge}
+                                    ${statusDot}
+                                    ${badgeRole} ${badgeMem}
                                 </div>
-                                <p class="text-xs text-gray-500 truncate">${user.company || 'Empresa no registrada'} • ${user.position || 'Cargo no registrado'}</p>
+                                <p class="text-xs text-gray-500 truncate">${user.company || 'Empresa no reg.'} • ${user.position || ''}</p>
                             </div>
                         </div>
                         <div class="shrink-0 ml-2">
-                            ${actionArea}
+                            ${actionBtn}
                         </div>
                     </div>
                 `;
@@ -535,282 +619,203 @@
             lucide.createIcons();
         }
 
-        // --- REUNIONES (Lógica de Resumen) ---
-        function loadMeetings() {
-            const q = query(collection(db, "meetings"), orderBy("date", "desc")); // Más recientes primero
-            onSnapshot(q, (snapshot) => {
-                const container = document.getElementById('meetings-list');
-                container.innerHTML = '';
-                if (snapshot.empty) container.innerHTML = '<p class="text-gray-400 text-sm text-center py-4">No hay reuniones.</p>';
-
-                const isAdmin = currentUserData.role === 'ADMIN';
-                const isPro = currentUserData.membership === 'PRO' || isAdmin;
-
-                snapshot.forEach(doc => {
-                    const m = doc.data();
-                    const dateObj = m.date ? new Date(m.date) : null;
-                    const dateStr = dateObj ? dateObj.toLocaleDateString() : 'Por definir';
-                    const timeStr = dateObj ? dateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '';
-                    
-                    // Lógica PRO: Ver participantes
-                    let participantsHtml = '';
-                    if (isPro && m.participantsList) {
-                         participantsHtml = `
-                            <div class="mt-3 pt-2 border-t border-gray-100">
-                                <p class="text-xs font-semibold text-gray-500 mb-1">Asistentes:</p>
-                                <div class="flex flex-wrap gap-1">
-                                    ${m.participantsList.map(p => `<span class="text-[10px] bg-blue-50 text-blue-700 px-2 py-0.5 rounded border border-blue-100">${p}</span>`).join('')}
-                                </div>
-                            </div>
-                         `;
-                    } else if (!isPro && m.participantsList) {
-                        participantsHtml = `
-                            <div class="mt-3 pt-2 border-t border-gray-100 text-xs text-gray-400 italic">
-                                <i data-lucide="lock" class="w-3 h-3 inline mr-1"></i> Detalles de asistentes solo para PRO.
-                            </div>
-                        `;
-                    }
-
-                    const deleteBtn = isAdmin ? `<button onclick="deleteDocFirestore('meetings', '${doc.id}')" class="text-red-400 hover:text-red-600 p-1"><i data-lucide="trash-2" class="w-4 h-4"></i></button>` : '';
-
-                    container.innerHTML += `
-                        <div class="border rounded-lg bg-white p-4 shadow-sm hover:shadow-md transition">
-                            <div class="flex justify-between items-start">
-                                <div>
-                                    <h4 class="font-bold text-gray-800 text-sm">${m.title}</h4>
-                                    <div class="flex items-center mt-1 text-xs text-gray-500">
-                                        <i data-lucide="calendar" class="w-3 h-3 mr-1"></i> ${dateStr} at ${timeStr}
-                                    </div>
-                                </div>
-                                ${deleteBtn}
-                            </div>
-                            <p class="text-sm text-gray-600 mt-3 bg-gray-50 p-2 rounded border border-gray-100">
-                                ${m.agenda || 'Sin resumen disponible.'}
-                            </p>
-                            ${participantsHtml}
-                        </div>
-                    `;
-                });
-                lucide.createIcons();
-            });
-        }
-        
-        window.showMeetingModal = () => document.getElementById('meeting-modal').classList.remove('hidden');
-        window.hideMeetingModal = () => document.getElementById('meeting-modal').classList.add('hidden');
-
-        document.getElementById('create-meeting-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            if (currentUserData.role !== 'ADMIN') return;
-
-            const title = document.getElementById('meeting-title').value;
-            const date = document.getElementById('meeting-date').value;
-            const agenda = document.getElementById('meeting-agenda').value;
-            const participantsRaw = document.getElementById('meeting-participants').value;
+        // GESTIÓN ADMIN DE USUARIOS
+        window.openAdminManage = (id) => {
+            const u = allUsersCache.find(user => user.id === id);
+            if (!u) return;
             
-            const participantsList = participantsRaw ? participantsRaw.split(',').map(s => s.trim()).filter(s => s) : [];
+            document.getElementById('admin-target-id').value = u.id;
+            document.getElementById('admin-target-name').textContent = u.name;
+            document.getElementById('admin-role-select').value = u.role || 'MEMBER';
+            document.getElementById('admin-membership-select').value = u.membership || 'SOCIO7X7';
+            document.getElementById('admin-active-check').checked = u.isActive !== false;
+            
+            document.getElementById('admin-user-modal').classList.remove('hidden');
+        };
+
+        window.saveUserManagement = async () => {
+            const id = document.getElementById('admin-target-id').value;
+            const role = document.getElementById('admin-role-select').value;
+            const membership = document.getElementById('admin-membership-select').value;
+            const isActive = document.getElementById('admin-active-check').checked;
 
             try {
-                await addDoc(collection(db, "meetings"), {
-                    title, date, agenda, participantsList, 
-                    createdBy: currentUser.uid, 
+                await updateDoc(doc(db, "users", id), { role, membership, isActive });
+                showNotification("Usuario actualizado correctamente.", "success");
+                closeModal('admin-user-modal');
+            } catch (e) { showNotification("Error actualizando usuario", "error"); }
+        };
+
+        // VER DATOS DE CONTACTO (MODAL)
+        window.viewContact = (id) => {
+            const u = allUsersCache.find(user => user.id === id);
+            if (!u) return;
+
+            document.getElementById('contact-name').textContent = u.name;
+            document.getElementById('contact-company').textContent = `${u.company || ''} - ${u.position || ''}`;
+            document.getElementById('contact-email').textContent = u.email;
+            document.getElementById('contact-phone').textContent = u.phone || 'No registrado';
+            document.getElementById('contact-bio').textContent = u.bio || 'Sin biografía.';
+            
+            document.getElementById('contact-info-modal').classList.remove('hidden');
+        };
+
+        // ==========================================
+        // OTROS MÓDULOS (Anuncios, Reuniones, Solicitudes)
+        // ==========================================
+        
+        // Anuncios
+        function loadAnnouncements() {
+            const q = query(collection(db, "announcements"), orderBy("createdAt", "desc"));
+            onSnapshot(q, (snap) => {
+                const c = document.getElementById('announcements-list');
+                c.innerHTML = snap.empty ? '<p class="text-gray-400 text-sm text-center py-4">Sin anuncios.</p>' : '';
+                snap.forEach(doc => {
+                    const d = doc.data();
+                    c.innerHTML += `
+                        <div class="border rounded-lg p-3 mb-3 ${d.pinned ? 'bg-blue-50 border-blue-100' : 'bg-white'}">
+                            <p class="font-medium text-gray-800 text-sm">${d.pinned ? '📌 ' : ''}${d.content}</p>
+                            ${currentUserData.role === 'ADMIN' ? `<button onclick="deleteDocFirestore('announcements', '${doc.id}')" class="text-xs text-red-400 mt-2">Eliminar</button>` : ''}
+                        </div>`;
+                });
+            });
+        }
+        document.getElementById('create-announcement-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            try {
+                await addDoc(collection(db, "announcements"), {
+                    content: document.getElementById('announcement-content').value,
+                    pinned: document.getElementById('announcement-pinned').checked,
                     createdAt: serverTimestamp()
                 });
-                hideMeetingModal();
-                showNotification("Reunión y resumen creados", "success");
-                document.getElementById('create-meeting-form').reset();
-            } catch (e) { showNotification("Error creando reunión", "error"); }
+                e.target.reset();
+                showNotification("Publicado");
+            } catch(e) {}
         });
+
+        // Reuniones
+        function loadMeetings() {
+            const q = query(collection(db, "meetings"), orderBy("date", "desc"));
+            onSnapshot(q, (snap) => {
+                const c = document.getElementById('meetings-list');
+                c.innerHTML = snap.empty ? '<p class="text-gray-400 text-sm text-center py-4">Sin reuniones.</p>' : '';
+                const isPro = currentUserData.membership === 'PRO' || currentUserData.role === 'ADMIN';
+
+                snap.forEach(doc => {
+                    const m = doc.data();
+                    const d = new Date(m.date).toLocaleDateString();
+                    
+                    let parts = '';
+                    if (isPro && m.participantsList) {
+                         parts = `<div class="mt-2 pt-2 border-t border-gray-100"><p class="text-xs text-gray-500">Asistentes: ${m.participantsList.join(', ')}</p></div>`;
+                    } else if (!isPro && m.participantsList) {
+                        parts = `<div class="mt-2 pt-2 border-t border-gray-100 text-xs text-gray-400 italic">🔒 Asistentes solo para PRO</div>`;
+                    }
+
+                    c.innerHTML += `
+                        <div class="border rounded-lg bg-white p-4 mb-3 shadow-sm">
+                            <h4 class="font-bold text-gray-800 text-sm">${m.title}</h4>
+                            <p class="text-xs text-gray-500 mb-2">📅 ${d}</p>
+                            <p class="text-sm text-gray-600 bg-gray-50 p-2 rounded">${m.agenda || ''}</p>
+                            ${parts}
+                            ${currentUserData.role === 'ADMIN' ? `<button onclick="deleteDocFirestore('meetings', '${doc.id}')" class="text-xs text-red-400 mt-2">Eliminar</button>` : ''}
+                        </div>`;
+                });
+            });
+        }
+        window.showMeetingModal = () => document.getElementById('meeting-modal').classList.remove('hidden');
+        document.getElementById('create-meeting-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const parts = document.getElementById('meeting-participants').value.split(',').map(s=>s.trim()).filter(s=>s);
+            try {
+                await addDoc(collection(db, "meetings"), {
+                    title: document.getElementById('meeting-title').value,
+                    date: document.getElementById('meeting-date').value,
+                    agenda: document.getElementById('meeting-agenda').value,
+                    participantsList: parts,
+                    createdAt: serverTimestamp()
+                });
+                closeModal('meeting-modal');
+                showNotification("Reunión creada");
+            } catch(e){}
+        });
+
+        // Solicitudes
+        async function updateRequestsCount() {
+            const d = new Date(); d.setDate(1); d.setHours(0,0,0,0);
+            const q = query(collection(db, "contact_requests"), where("from", "==", currentUser.uid), where("createdAt", ">=", d));
+            const s = await getDocs(q);
+            document.getElementById('requests-used').textContent = s.size;
+            return s.size;
+        }
+        window.requestContact = async (tid, tname) => {
+            if(!confirm(`¿Solicitar a ${tname}?`)) return;
+            if(currentUserData.role !== 'ADMIN' && (await updateRequestsCount()) >= REQUESTS_LIMIT_PRO) {
+                return alert("Límite mensual alcanzado.");
+            }
+            try {
+                await addDoc(collection(db, "contact_requests"), { from: currentUser.uid, to: tid, status: 'PENDING', fromName: currentUserData.name, createdAt: serverTimestamp() });
+                showNotification("Solicitud enviada");
+                updateRequestsCount();
+            } catch(e) { showNotification("Error", "error"); }
+        };
+        function loadRequests() {
+            const q = query(collection(db, "contact_requests"), where("to", "==", currentUser.uid), where("status", "==", "PENDING"));
+            onSnapshot(q, (snap) => {
+                const c = document.getElementById('requests-list');
+                document.getElementById('requests-count').textContent = snap.size;
+                document.getElementById('requests-count').classList.toggle('hidden', snap.size===0);
+                c.innerHTML = snap.empty ? '<p class="text-sm text-gray-400 text-center">Sin solicitudes.</p>' : '';
+                snap.forEach(doc => {
+                    const r = doc.data();
+                    c.innerHTML += `
+                        <div class="border p-3 rounded bg-blue-50 flex justify-between items-center mb-2">
+                            <div><p class="font-bold text-sm">${r.fromName}</p><p class="text-xs text-blue-600">Solicita datos</p></div>
+                            <div class="flex gap-1">
+                                <button onclick="handleReq('${doc.id}', 'APPROVED')" class="bg-white p-1 rounded text-green-600 border">✔</button>
+                                <button onclick="handleReq('${doc.id}', 'REJECTED')" class="bg-white p-1 rounded text-red-600 border">✖</button>
+                            </div>
+                        </div>`;
+                });
+            });
+        }
+        window.handleReq = async (id, status) => {
+            await updateDoc(doc(db, "contact_requests", id), { status });
+            showNotification(status === 'APPROVED' ? 'Aprobado' : 'Rechazado');
+        };
+
+        // Funciones Admin Extra
+        window.bulkUploadUsers = async () => {
+            if(!confirm("¿Cargar 10 usuarios demo?")) return;
+            const batch = writeBatch(db);
+            for(let i=0; i<10; i++) {
+                const ref = doc(collection(db, "users"));
+                batch.set(ref, {
+                    name: `Usuario Demo ${i}`,
+                    email: `demo${i}@test.com`,
+                    role: i%3===0 ? 'PRO' : 'MEMBER',
+                    membership: i%3===0 ? 'PRO' : 'SOCIO7X7',
+                    company: 'Empresa Demo',
+                    isActive: true,
+                    createdAt: serverTimestamp()
+                });
+            }
+            await batch.commit();
+            showNotification("Carga masiva lista.");
+        };
+
+        window.seedDatabase = async () => {
+            if(!confirm("¿Resetear a Admin?")) return;
+            await updateDoc(doc(db, "users", currentUser.uid), { role: 'ADMIN', membership: 'PRO', name: 'Super Admin', isActive: true });
+            window.location.reload();
+        };
 
         window.deleteDocFirestore = async (col, id) => {
             if(!confirm("¿Eliminar?")) return;
-            try {
-                // En un entorno real usaríamos deleteDoc, aquí usamos un hack visual
-                // ya que no importé deleteDoc arriba para mantener simpleza,
-                // pero como soy admin, puedo inyectarlo dinámicamente o recargar.
-                // Para esta demo, recargamos.
-                alert("Elemento eliminado (simulado). En producción desaparecería.");
-            } catch(e) {}
-        }
-
-
-        // --- SOLICITUDES (Lógica de cuotas PRO) ---
-        
-        // Contar solicitudes del mes actual
-        async function updateRequestsCount() {
-            const startOfMonth = new Date();
-            startOfMonth.setDate(1);
-            startOfMonth.setHours(0,0,0,0);
-
-            const q = query(
-                collection(db, "contact_requests"), 
-                where("from", "==", currentUser.uid),
-                where("createdAt", ">=", startOfMonth)
-            );
-            
-            const snapshot = await getDocs(q);
-            const used = snapshot.size;
-            document.getElementById('requests-used').textContent = used;
-            return used;
-        }
-
-        window.requestContact = async (targetId, targetName) => {
-            if (!confirm(`¿Solicitar contacto de ${targetName}?`)) return;
-
-            // Verificar cuota si es PRO (y no Admin)
-            if (currentUserData.role !== 'ADMIN') {
-                const used = await updateRequestsCount();
-                if (used >= REQUESTS_LIMIT_PRO) {
-                    alert("Has alcanzado tu límite mensual de 5 solicitudes PRO.");
-                    return;
-                }
-            }
-
-            try {
-                // Verificar duplicados
-                const q = query(collection(db, "contact_requests"), 
-                    where("from", "==", currentUser.uid), 
-                    where("to", "==", targetId),
-                    where("status", "==", "PENDING")
-                );
-                const snap = await getDocs(q);
-                if (!snap.empty) {
-                    showNotification("Ya tienes una solicitud pendiente para este usuario.", "error");
-                    return;
-                }
-
-                await addDoc(collection(db, "contact_requests"), {
-                    from: currentUser.uid,
-                    to: targetId,
-                    status: 'PENDING',
-                    fromName: currentUserData.name,
-                    createdAt: serverTimestamp() // Timestamp del cliente para simular, firebase lo pone server side
-                });
-                
-                updateRequestsCount();
-                showNotification("Solicitud enviada al usuario.", "success");
-            } catch (e) { showNotification("Error enviando solicitud", "error"); }
+            // Hack visual para no importar deleteDoc en este bloque compacto, 
+            // en prod usar deleteDoc(doc(db, col, id));
+            alert("Eliminado (simulado)");
         };
-
-        function loadRequests() {
-            // Mostrar solicitudes ENTRANTES (gente que quiere contactarme)
-            const q = query(collection(db, "contact_requests"), where("to", "==", currentUser.uid), where("status", "==", "PENDING"));
-            onSnapshot(q, (snapshot) => {
-                const container = document.getElementById('requests-list');
-                const badge = document.getElementById('requests-count');
-                container.innerHTML = '';
-                
-                const count = snapshot.size;
-                badge.textContent = count;
-                badge.classList.toggle('hidden', count === 0);
-
-                if (snapshot.empty) container.innerHTML = '<p class="text-sm text-gray-400 text-center py-2">Sin novedades.</p>';
-
-                snapshot.forEach(doc => {
-                    const req = doc.data();
-                    container.innerHTML += `
-                        <div class="border p-3 rounded-lg flex justify-between items-center bg-blue-50 border-blue-100">
-                            <div>
-                                <p class="text-sm font-bold text-gray-800">${req.fromName}</p>
-                                <p class="text-xs text-blue-600">Quiere tus datos</p>
-                            </div>
-                            <div class="flex gap-2">
-                                <button onclick="handleReq('${doc.id}', 'APPROVED')" class="bg-white text-green-600 hover:text-green-700 border border-green-200 p-1.5 rounded shadow-sm" title="Aprobar"><i data-lucide="check" class="w-4 h-4"></i></button>
-                                <button onclick="handleReq('${doc.id}', 'REJECTED')" class="bg-white text-red-400 hover:text-red-600 border border-red-200 p-1.5 rounded shadow-sm" title="Rechazar"><i data-lucide="x" class="w-4 h-4"></i></button>
-                            </div>
-                        </div>
-                    `;
-                });
-                lucide.createIcons();
-            });
-        }
-
-        window.handleReq = async (id, status) => {
-            await updateDoc(doc(db, "contact_requests", id), { status });
-            showNotification(status === 'APPROVED' ? 'Contacto compartido' : 'Solicitud rechazada', 'success');
-        };
-
-        // ==========================================
-        // 5. FUNCIONES ADMIN AVANZADAS
-        // ==========================================
-        
-        window.makeAdmin = async (userId) => {
-            if(!confirm("¿Estás seguro de nombrar ADMIN a este usuario? Tendrá control total.")) return;
-            try {
-                await updateDoc(doc(db, "users", userId), { role: 'ADMIN', membership: 'PRO' });
-                showNotification("Usuario promovido a Admin", "success");
-            } catch (e) { showNotification("Error promoviendo usuario", "error"); }
-        }
-
-        window.bulkUploadUsers = async () => {
-            if(!confirm("Esto cargará 10 usuarios de ejemplo al directorio. ¿Continuar?")) return;
-            showScreen('loading-screen');
-            
-            const dummyData = [
-                { name: 'Ana López', company: 'Tech CL', position: 'Gerente TI', role: 'MEMBER', membership: 'SOCIO7X7' },
-                { name: 'Carlos Ruiz', company: 'Inversiones Sur', position: 'Analista', role: 'MEMBER', membership: 'SOCIO7X7' },
-                { name: 'Elena T.', company: 'Freelance', position: 'Diseñadora UX', role: 'PRO', membership: 'PRO' },
-                { name: 'Roberto F.', company: 'Constructora X', position: 'Jefe Obras', role: 'MEMBER', membership: 'SOCIO7X7' },
-                { name: 'Lucía M.', company: 'Marketing Digital', position: 'CEO', role: 'PRO', membership: 'PRO' },
-                { name: 'David K.', company: 'StartUp IA', position: 'CTO', role: 'PRO', membership: 'PRO' },
-                { name: 'Sofía V.', company: 'Retail Corp', position: 'RRHH', role: 'MEMBER', membership: 'SOCIO7X7' },
-                { name: 'Jorge B.', company: 'Logística Pro', position: 'Gerente Ops', role: 'MEMBER', membership: 'SOCIO7X7' },
-                { name: 'Marta S.', company: 'Consultora Legal', position: 'Abogada', role: 'PRO', membership: 'PRO' },
-                { name: 'Pedro P.', company: 'Banca Privada', position: 'Ejecutivo', role: 'MEMBER', membership: 'SOCIO7X7' }
-            ];
-
-            try {
-                const batch = writeBatch(db);
-                dummyData.forEach((u, index) => {
-                    const fakeId = `bulk_user_${Date.now()}_${index}`;
-                    const userRef = doc(db, "users", fakeId);
-                    batch.set(userRef, {
-                        ...u,
-                        email: `usuario${index}@test.cl`,
-                        createdAt: serverTimestamp()
-                    });
-                });
-                await batch.commit();
-                showNotification("Carga masiva completada (10 usuarios)", "success");
-            } catch (e) {
-                console.error(e);
-                showNotification("Error en carga masiva", "error");
-            } finally {
-                showScreen('app-screen');
-            }
-        };
-
-        // Seed Original (Limpia y crea estructura base)
-        window.seedDatabase = async () => {
-            if(!confirm("ATENCIÓN: Esto te hará ADMIN y cargará datos básicos. Úsalo solo al inicio.")) return;
-            showScreen('loading-screen');
-            try {
-                await updateDoc(doc(db, "users", currentUser.uid), {
-                    role: 'ADMIN',
-                    membership: 'PRO',
-                    company: 'Red7x7 Admin',
-                    position: 'Super Admin'
-                });
-
-                // Reunión Ejemplo
-                await addDoc(collection(db, "meetings"), {
-                    title: 'Kickoff Mensual',
-                    agenda: 'Revisión de metas Q4.',
-                    date: new Date().toISOString(),
-                    participantsList: ['carlos@empresa.cl', 'sofia@retail.cl'],
-                    createdBy: currentUser.uid,
-                    createdAt: serverTimestamp()
-                });
-                
-                showNotification("Sistema reiniciado. Eres Super Admin.", "success");
-                setTimeout(() => window.location.reload(), 1500);
-            } catch (e) {
-                showNotification("Error: " + e.message, "error");
-                showScreen('app-screen');
-            }
-        };
-
-        // Exponer funciones globales para onclick en HTML
-        window.deleteDocFirestore = window.deleteDocFirestore; 
 
     </script>
 </body>
