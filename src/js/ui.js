@@ -21,15 +21,52 @@ export const showAuthForm = (form) => {
 }
 
 export const showScreen = (screen) => {
-    document.getElementById('loading-screen').style.display = screen === 'loading' ? 'flex' : 'none';
-    const authContainer = document.getElementById('auth-container');
-    if (authContainer) authContainer.style.display = ['login', 'register', 'forgot'].includes(screen) ? 'flex' : 'none';
+    // console.log("Showing screen:", screen); // Debugging
+    const loading = document.getElementById('loading-screen');
+    const auth = document.getElementById('auth-container');
+    const app = document.getElementById('app-screen');
+    const profile = document.getElementById('profile-screen');
+
+    // Reset all to hidden/none first
+    if(loading) loading.style.display = 'none';
     
-    const appScreen = document.getElementById('app-screen');
-    if (appScreen) appScreen.style.display = screen === 'app' ? 'block' : 'none';
-    
-    const profileScreen = document.getElementById('profile-screen');
-    if (profileScreen) profileScreen.style.display = screen === 'profile' ? 'block' : 'none';
+    // Auth Container handling
+    if(auth) {
+        if(['login', 'register', 'forgot'].includes(screen)) {
+            auth.style.display = 'flex';
+            auth.classList.remove('hidden');
+        } else {
+            auth.style.display = 'none';
+            auth.classList.add('hidden');
+        }
+    }
+
+    // App handling
+    if(app) {
+        if(screen === 'app') {
+            app.style.display = 'block';
+            app.classList.remove('hidden');
+        } else {
+            app.style.display = 'none';
+            app.classList.add('hidden');
+        }
+    }
+
+    // Profile handling
+    if(profile) {
+        if(screen === 'profile') {
+            profile.style.display = 'block';
+            profile.classList.remove('hidden');
+        } else {
+            profile.style.display = 'none';
+            profile.classList.add('hidden');
+        }
+    }
+
+    // Loading handling
+    if(screen === 'loading' && loading) {
+         loading.style.display = 'flex';
+    }
     
     if (screen === 'login') showAuthForm('login');
     if (screen === 'register') showAuthForm('register');
@@ -205,6 +242,7 @@ export const renderDirectory = (users, currentUser, searchTerm = '', unlockedCon
                         <p>${user.email}</p>
                         <p>${user.phone || 'Sin teléfono'}</p>
                         <p class="font-medium text-gray-800">${user.company || ''}</p>
+                        ${user.description ? `<p class="text-xs text-gray-500 mt-1 italic">"${user.description}"</p>` : ''}
                     </div>`;
             } else if (currentUser.role === 'pro') {
                 // Pro Logic
@@ -216,6 +254,7 @@ export const renderDirectory = (users, currentUser, searchTerm = '', unlockedCon
                         <p>${user.email}</p>
                         <p>${user.phone || 'Sin teléfono'}</p>
                         <p class="font-medium text-gray-800">${user.company || ''}</p>
+                        ${user.description ? `<p class="text-xs text-gray-500 mt-1 italic">"${user.description}"</p>` : ''}
                     </div>`;
                 } else {
                     // Locked - Show Button
@@ -353,8 +392,8 @@ export const renderAdminPanels = (currentUser, users = {}) => {
 
 export const renderProfileForm = (currentUser) => {
     if(!currentUser) return;
-    const fields = ['profile-name', 'profile-email', 'profile-company', 'profile-position', 'profile-phone'];
-    const values = [currentUser.name, currentUser.email, currentUser.company, currentUser.position, currentUser.phone];
+    const fields = ['profile-name', 'profile-email', 'profile-company', 'profile-position', 'profile-phone', 'profile-description'];
+    const values = [currentUser.name, currentUser.email, currentUser.company, currentUser.position, currentUser.phone, currentUser.description];
     
     fields.forEach((id, idx) => {
         const el = document.getElementById(id);

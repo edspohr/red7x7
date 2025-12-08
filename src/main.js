@@ -32,7 +32,8 @@ import {
     renderDashboardStats,
     renderAdminPanels,
     renderDirectory,
-    renderProfileForm
+    renderProfileForm,
+    renderHeader
 } from './js/ui.js';
 import { handleProcessMeetingAI } from './js/ai.js';
 
@@ -45,6 +46,16 @@ let state = {
 };
 
 // --- Initialization ---
+
+// Global Error Handler for "White Screen" debugging
+window.addEventListener('error', (event) => {
+    console.error("Global Error Caught:", event.error);
+    // Optional: show user friendly error if stuck on loading
+    const loading = document.getElementById('loading-screen');
+    if(loading && loading.style.display !== 'none') {
+        loading.innerHTML = `<div class="p-4 text-red-600 font-bold text-center">Error cargando la aplicación.<br><span class="text-sm font-normal text-gray-800">${event.message}</span><br><button onclick="window.location.reload()" class="mt-4 btn btn-primary">Reintentar</button></div>`;
+    }
+});
 
 // auth.js handles the initial auth check and calls this:
 setOnLoginSuccess(async (user) => {
@@ -151,7 +162,8 @@ document.addEventListener('DOMContentLoaded', () => {
             name: document.getElementById('profile-name').value,
             company: document.getElementById('profile-company').value,
             position: document.getElementById('profile-position').value,
-            phone: document.getElementById('profile-phone').value
+            phone: document.getElementById('profile-phone').value,
+            description: document.getElementById('profile-description').value
         };
         await updateCurrentUser(updates);
         // Optimistic local update is handled in auth.js, but we might want to refresh UI if needed
@@ -234,6 +246,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     showToast(err.message, 'error');
                 }
             }
+
         }
     });
 
@@ -244,20 +257,15 @@ document.addEventListener('DOMContentLoaded', () => {
             const newRole = e.target.value;
             if(confirm(`¿Cambiar rol de usuario a ${newRole}?`)) {
                 try {
-                    // Update locally for speed? No, let storage listener handle it? 
-                    // Actually data.js needs a function to update OTHER users.
-                    // We haven't implemented updateOtherUser yet.
-                    // Let's implement it in data.js first, but temporarily I can assume I need it.
-                    await import('./js/auth.js').then(mod => { 
-                         // Wait, auth.js updates CURRENT user. I need to update ANY user.
-                         // This requires a new function in data.js or auth.js. 
-                         // Creating a TODO to implement updateUserRole in data.js
-                    });
-                    
-                    // Call the function (I will create it in next step)
-                    const { updateUserRole } = await import('./js/data.js');
                     await updateUserRole(uid, newRole);
+
+                    // Fix: Update local state immediately to reflect change in UI
+                    if(state.users[uid]) {
+                        state.users[uid].role = newRole;
+                    }
+                    
                     showToast('Rol actualizado', 'success');
+                    refreshUI();
                 } catch(err) {
                     console.error(err);
                     showToast('Error actualizando rol', 'error');
