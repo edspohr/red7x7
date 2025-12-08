@@ -1,4 +1,5 @@
 import './style.css';
+import "toastify-js/src/toastify.css";
 import { createIcons } from 'lucide';
 import { 
     subscribeToAnnouncements, 
@@ -10,11 +11,13 @@ import {
 } from './js/data.js';
 import { 
     handleEmailLogin, 
+    handleGoogleLogin,
     handleRegister, 
     handleForgotPassword, 
     handleLogout, 
     showToast,
     setOnLoginSuccess,
+    setOnLogout,
     updateCurrentUser
 } from './js/auth.js';
 import { 
@@ -62,6 +65,10 @@ setOnLoginSuccess(async (user) => {
     });
 });
 
+setOnLogout(() => {
+    showScreen('login');
+});
+
 const refreshUI = () => {
     if (!state.currentUser) return;
     const { currentUser, announcements, meetings, users } = state;
@@ -88,6 +95,7 @@ const refreshUI = () => {
 document.addEventListener('DOMContentLoaded', () => {
     // Auth Forms
     document.getElementById('login-form').addEventListener('submit', handleEmailLogin);
+    document.getElementById('google-login-button').addEventListener('click', handleGoogleLogin);
     document.getElementById('register-form').addEventListener('submit', handleRegister);
     document.getElementById('forgot-password-form').addEventListener('submit', handleForgotPassword);
     

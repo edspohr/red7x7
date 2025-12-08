@@ -4,9 +4,11 @@ import {
     createUserWithEmailAndPassword, 
     signOut, 
     onAuthStateChanged,
-    updateProfile 
+    updateProfile,
+    GoogleAuthProvider,
+    signInWithPopup 
 } from "firebase/auth";
-import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc, updateDoc, onSnapshot } from "firebase/firestore";
 import Toastify from 'toastify-js';
 
 // Helper for Toasts (Kept for compatibility)
@@ -30,17 +32,23 @@ export const showToast = (text, type = 'info') => {
 let currentUser = null;
 let onLoginSuccess = null;
 
+let onLogout = null;
+
 export const getCurrentUser = () => currentUser;
 export const setOnLoginSuccess = (fn) => { onLoginSuccess = fn; };
+export const setOnLogout = (fn) => { onLogout = fn; };
 
-// Listen to Auth State Changes
-onAuthStateChanged(auth, async (user) => {
+// Auth Subscription & Data Listener
+let unsubscribeUserDoc = null;
+
+onAuthStateChanged(auth, (user) => {
     if (user) {
-        // User is signed in, fetch additional profile data from Firestore
-        try {
-            const userDoc = await getDoc(doc(db, "users", user.uid));
-            if (userDoc.exists()) {
-                const profileData = userDoc.data();
+        // User is signed in. Using onSnapshot to handle race condition on registration.
+        if (unsubscribeUserDoc) unsubscribeUserDoc(); // Clear previous if any
+
+        unsubscribeUserDoc = onSnapshot(doc(db, "users", user.uid), (docSnap) => {
+            if (docSnap.exists()) {
+                const profileData = docSnap.data();
                 currentUser = { 
                     id: user.uid, 
                     email: user.email, 
@@ -49,36 +57,70 @@ onAuthStateChanged(auth, async (user) => {
                     ...profileData 
                 };
             } else {
-                // Fallback if no firestore doc (should depend on registration)
+                // Profile might not exist YET (in middle of registration), or legacy.
                 currentUser = {
                     id: user.uid,
                     email: user.email,
                     name: user.displayName,
                     photoURL: user.photoURL,
-                    role: 'socio7x7' // default
+                    role: 'socio7x7'
                 };
             }
-            
-            // Trigger UI update
+            // Real-time update of UI/State whenever profile changes (or initial load)
             if (onLoginSuccess) onLoginSuccess(currentUser);
-            
-            // Keep localStorage for fast initial load (optional, but good for perceived perf)
             localStorage.setItem('currentUser', JSON.stringify(currentUser));
-        } catch (error) {
-            console.error("Error fetching user profile:", error);
-            showToast("Error cargando perfil de usuario", "error");
-        }
+        }, (error) => {
+             console.error("Error listening to user profile:", error);
+        });
+
     } else {
         // User is signed out
+        if (unsubscribeUserDoc) {
+            unsubscribeUserDoc();
+            unsubscribeUserDoc = null;
+        }
         currentUser = null;
         localStorage.removeItem('currentUser');
+        
+        // Fix: Check style.display since we use that for toggling, not 'hidden' class
         const appScreen = document.getElementById('app-screen');
-        if (appScreen && !appScreen.classList.contains('hidden')) {
-             // If we were in app, reload to go to login
+        const isAppVisible = appScreen && appScreen.style.display !== 'none' && appScreen.style.display !== '';
+
+        if (isAppVisible) {
              window.location.reload();
+        } else if (onLogout) {
+            onLogout();
         }
     }
 });
+
+export const handleGoogleLogin = async () => {
+    const provider = new GoogleAuthProvider();
+    try {
+        const result = await signInWithPopup(auth, provider);
+        const user = result.user;
+        
+        // Check if user profile exists in Firestore, if not create it
+        const userDocRef = doc(db, "users", user.uid);
+        const userDoc = await getDoc(userDocRef);
+
+        if (!userDoc.exists()) {
+            await setDoc(userDocRef, {
+                name: user.displayName,
+                email: user.email,
+                photoURL: user.photoURL,
+                role: 'socio7x7',
+                createdAt: new Date().toISOString()
+            });
+        }
+        
+        showToast(`Bienvenido ${user.displayName || ''}`, 'success');
+        // onAuthStateChanged will handle the rest
+    } catch (error) {
+        console.error("Google Login Error:", error);
+        showToast("Error iniciando sesión con Google", "error");
+    }
+};
 
 export const handleEmailLogin = async (e) => {
     e.preventDefault();

@@ -87,11 +87,19 @@ export const renderAnnouncements = (announcements, currentUser) => {
                 `;
         }
         
-        // Format date if it's new ISO string or timestamp
+        // Date format: Handle YYYY-MM-DD manually to avoid UTC shift
         let displayDate = ann.date; 
         try {
-             displayDate = new Date(ann.date).toLocaleDateString();
+             if(ann.date.includes('T')) {
+                 // It's ISO string (from created announcements), just show date part local
+                 displayDate = new Date(ann.date).toLocaleDateString();
+             } else {
+                 // It's YYYY-MM-DD (from manual mocks?), parse as local
+                 const [y, m, d] = ann.date.split('-');
+                 displayDate = `${d}/${m}/${y}`;
+             }
         } catch(e) {}
+
 
         annEl.innerHTML = `
             ${adminActions}
@@ -153,7 +161,15 @@ export const renderMeetings = (meetings, users, currentUser, showEditModal) => {
 
         // Date format
         let dDate = meeting.date;
-        try { dDate = new Date(meeting.date).toLocaleDateString(); } catch(e){}
+        try { 
+            if(meeting.date.includes('T')) {
+                dDate = new Date(meeting.date).toLocaleDateString();
+            } else {
+                 // Fix YYYY-MM-DD timezone issue
+                 const [y, m, d] = meeting.date.split('-');
+                 dDate = `${d}/${m}/${y}`;
+            }
+        } catch(e){}
 
         meetingEl.innerHTML = `
             ${adminActions}
