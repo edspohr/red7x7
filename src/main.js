@@ -82,18 +82,21 @@ setOnLoginSuccess(async (user) => {
     // 1. Fetch Directory (One-time fetch for now, or could be subscription)
     try {
         state.users = await fetchDirectory();
-        refreshUI();
-    } catch(e) { console.error("Dir fetch error", e); }
+        await refreshUI();
+    } catch(e) { 
+        console.error("Init Data Error", e); 
+        // We generally don't want to stop the app here, but maybe show a toast
+    }
 
     // 2. Subscribe to Data
-    subscribeToAnnouncements((data) => {
+    subscribeToAnnouncements(async (data) => {
         state.announcements = data;
-        refreshUI();
+        try { await refreshUI(); } catch(e) { console.error(e); }
     });
 
-    subscribeToMeetings((data) => {
+    subscribeToMeetings(async (data) => {
         state.meetings = data;
-        refreshUI();
+        try { await refreshUI(); } catch(e) { console.error(e); }
     });
 });
 
