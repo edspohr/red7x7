@@ -57,6 +57,23 @@ window.addEventListener('error', (event) => {
     }
 });
 
+// Failsafe: If app doesn't load in 8 seconds, show manual retry
+setTimeout(() => {
+    const loading = document.getElementById('loading-screen');
+    if(loading && loading.style.display !== 'none') {
+        loading.innerHTML = `
+            <div class="flex flex-col items-center justify-center p-6 text-center">
+                <i data-lucide="alert-circle" class="w-12 h-12 text-orange-500 mb-4"></i>
+                <h3 class="text-lg font-bold text-gray-800">La carga está tardando...</h3>
+                <p class="text-sm text-gray-600 mb-4">Puede que haya un problema de conexión.</p>
+                <div class="space-x-4">
+                    <button onclick="window.location.reload()" class="btn btn-primary bg-indigo-600 text-white px-4 py-2 rounded">Recargar</button>
+                    <button onclick="document.getElementById('loading-screen').style.display='none'; document.getElementById('auth-container').style.display='flex';" class="btn btn-secondary bg-gray-200 text-gray-800 px-4 py-2 rounded">Ir al Login</button>
+                </div>
+            </div>`;
+    }
+}, 8000);
+
 // auth.js handles the initial auth check and calls this:
 setOnLoginSuccess(async (user) => {
     state.currentUser = user;
@@ -258,12 +275,12 @@ document.addEventListener('DOMContentLoaded', () => {
             if(confirm(`¿Cambiar rol de usuario a ${newRole}?`)) {
                 try {
                     await updateUserRole(uid, newRole);
-
-                    // Fix: Update local state immediately to reflect change in UI
+                    
+                    // Optimistic Update
                     if(state.users[uid]) {
                         state.users[uid].role = newRole;
                     }
-                    
+
                     showToast('Rol actualizado', 'success');
                     refreshUI();
                 } catch(err) {

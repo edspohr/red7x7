@@ -35,7 +35,11 @@ let onLoginSuccess = null;
 let onLogout = null;
 
 export const getCurrentUser = () => currentUser;
-export const setOnLoginSuccess = (fn) => { onLoginSuccess = fn; };
+export const setOnLoginSuccess = (fn) => { 
+    onLoginSuccess = fn; 
+    // Immediate check in case auth loaded before handler was set
+    if(currentUser && onLoginSuccess) onLoginSuccess(currentUser);
+};
 export const setOnLogout = (fn) => { onLogout = fn; };
 
 // Auth Subscription & Data Listener
@@ -78,6 +82,11 @@ onAuthStateChanged(auth, async (user) => {
             localStorage.setItem('currentUser', JSON.stringify(currentUser));
         }, (error) => {
              console.error("Error listening to user profile:", error);
+             showToast("Error de conexión o permisos. Verifica tu internet.", "error");
+             // Fallback: If we can't load profile, sign out to prevent stuck loading screen
+             signOut(auth).then(() => {
+                 if(onLogout) onLogout();
+             });
         });
 
     } else {
