@@ -3,11 +3,15 @@ import "toastify-js/src/toastify.css";
 import { createIcons } from 'lucide';
 import { 
     subscribeToAnnouncements, 
-    subscribeToMeetings, 
-    fetchDirectory, 
     addAnnouncement, 
-    addMeeting,
-    updateMeeting
+    subscribeToMeetings, 
+    addMeeting, 
+    updateMeeting,
+    fetchDirectory,
+    updateUserRole,
+    checkAndResetProQuota,
+    getUnlockedContacts,
+    unlockContact
 } from './js/data.js';
 import { 
     handleEmailLogin, 
@@ -69,24 +73,44 @@ setOnLogout(() => {
     showScreen('login');
 });
 
-const refreshUI = () => {
+const refreshUI = async () => {
     if (!state.currentUser) return;
-    const { currentUser, announcements, meetings, users } = state;
+    
+    // Check quota and unlocks if Pro
+    if (state.currentUser.role === 'pro') {
+         const quota = await checkAndResetProQuota(state.currentUser.id);
+         if (quota) {
+             state.contactRequestsLeft = 5 - (quota.count || 0);
+             // Attach to user object for UI convenience
+             state.currentUser.contactRequestsLeft = state.contactRequestsLeft;
+         }
+         state.unlockedContacts = await getUnlockedContacts(state.currentUser.id);
+    } else {
+        state.unlockedContacts = {};
+    }
+
+    const { currentUser, announcements, meetings, users, unlockedContacts } = state;
+
+    // Pass data to UI
+    renderHeader(currentUser);
+    renderDashboardStats({
+        announcementCount: announcements.length,
+        upcomingMeetingsCount: meetings.filter(m => new Date(m.date) > new Date()).length,
+        userCount: Object.keys(users).length,
+        contactRequestsLeft: state.contactRequestsLeft
+    }, currentUser);
     
     renderAnnouncements(announcements, currentUser);
-    renderMeetings(meetings, users, currentUser, showEditModal); // Pass modal handler
+    renderMeetings(meetings, users, currentUser, (id) => {
+        // Edit Meeting Handler
+        const meeting = meetings.find(m => m.id === id);
+        if(meeting) openMeetingModal(meeting);
+    });
+    
+    // Pass unlockedContacts to directory
+    renderDirectory(users, currentUser, document.getElementById('search-directory')?.value || '', unlockedContacts);
+    
     renderAdminPanels(currentUser, users);
-    renderDirectory(users, currentUser, ''); // Initial render
-    
-    // Stats calculation
-    const statsData = {
-        announcementCount: announcements.length,
-        upcomingMeetingsCount: meetings.filter(m => m.date >= new Date().toISOString().split('T')[0]).length,
-        userCount: Object.keys(users).length,
-        contactRequestsLeft: currentUser.contactRequestsLeft
-    };
-    renderDashboardStats(statsData, currentUser);
-    
     renderProfileForm(currentUser);
 };
 
@@ -183,9 +207,67 @@ document.addEventListener('DOMContentLoaded', () => {
     const searchInput = document.getElementById('search-directory');
     if(searchInput) {
         searchInput.addEventListener('input', (e) => {
-            renderDirectory(state.users, state.currentUser, e.target.value);
+            renderDirectory(state.users, state.currentUser, e.target.value, state.unlockedContacts);
         });
     }
+
+    // Directory Actions (Unlock / Role Change)
+    document.getElementById('directory-list').addEventListener('click', async (e) => {
+        // Unlock Contact Handler
+        if (e.target.closest('.unlock-contact-btn')) {
+            const btn = e.target.closest('.unlock-contact-btn');
+            const targetUid = btn.getAttribute('data-uid');
+            const targetName = btn.getAttribute('data-name');
+            
+            if (state.contactRequestsLeft <= 0) {
+                 showToast('Ya consumiste tus 5 créditos de este mes.', 'error');
+                 return;
+            }
+
+            if(confirm(`¿Desbloquear datos de ${targetName}? \nConsumirá 1 crédito (de ${state.contactRequestsLeft}).\nDisponible por 24 horas.`)) {
+                try {
+                    await unlockContact(state.currentUser.id, targetUid);
+                    showToast('Contacto desbloqueado', 'success');
+                    refreshUI(); // Refresh to update view and quota
+                } catch(err) {
+                    console.error(err);
+                    showToast(err.message, 'error');
+                }
+            }
+        }
+    });
+
+    // Admin Role Change (Delegation) - keep existing logic but wrapped in change event listener block
+    document.getElementById('directory-list').addEventListener('change', async (e) => {
+        if (e.target.classList.contains('role-selector')) {
+            const uid = e.target.getAttribute('data-uid');
+            const newRole = e.target.value;
+            if(confirm(`¿Cambiar rol de usuario a ${newRole}?`)) {
+                try {
+                    // Update locally for speed? No, let storage listener handle it? 
+                    // Actually data.js needs a function to update OTHER users.
+                    // We haven't implemented updateOtherUser yet.
+                    // Let's implement it in data.js first, but temporarily I can assume I need it.
+                    await import('./js/auth.js').then(mod => { 
+                         // Wait, auth.js updates CURRENT user. I need to update ANY user.
+                         // This requires a new function in data.js or auth.js. 
+                         // Creating a TODO to implement updateUserRole in data.js
+                    });
+                    
+                    // Call the function (I will create it in next step)
+                    const { updateUserRole } = await import('./js/data.js');
+                    await updateUserRole(uid, newRole);
+                    showToast('Rol actualizado', 'success');
+                } catch(err) {
+                    console.error(err);
+                    showToast('Error actualizando rol', 'error');
+                }
+            } else {
+                // Revert selection if cancelled
+                e.target.value = state.users[uid].role || 'socio7x7';
+            }
+        }
+    });
 
     // Modal Close
     document.getElementById('close-modal-button').addEventListener('click', () => {

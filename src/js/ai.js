@@ -23,10 +23,9 @@ export async function handleProcessMeetingAI(allUsers) {
         const genAI = new GoogleGenerativeAI(apiKey);
         const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-        // Safely map user names
-        const userNames = allUsers ? Object.values(allUsers).map(user => user.name).join(", ") : "";
-        
-        const prompt = `Analiza las siguientes notas de una reunión. Tu tarea es extraer dos cosas y devolverlas en formato JSON: 1. Un resumen ejecutivo ("summary") que destaque los puntos clave y compromisos. 2. Una lista de los nombres de los participantes ("participants") mencionados en el texto que también están en esta lista de usuarios del sistema: [${userNames}]. Notas: --- ${notes} --- Responde únicamente con un objeto JSON válido.`;
+        // Privacy update: Do NOT send user list to AI.
+        // The prompt now asks for name extraction only.
+        const prompt = `Analiza las siguientes notas de una reunión. Tu tarea es extraer dos cosas y devolverlas en formato JSON: 1. Un resumen ejecutivo ("summary") que destaque los puntos clave y compromisos. 2. Una lista de los nombres de los participantes ("participants") mencionados en el texto. Notas: --- ${notes} --- Responde únicamente con un objeto JSON válido.`;
         
         const result = await model.generateContent(prompt);
         const response = await result.response;

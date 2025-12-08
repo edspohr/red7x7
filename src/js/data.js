@@ -7,7 +7,9 @@ import {
     orderBy, 
     getDocs,
     doc,
-    updateDoc
+    updateDoc,
+    getDoc, 
+    setDoc
 } from "firebase/firestore";
 
 // --- Announcements ---
@@ -60,3 +62,74 @@ export const fetchDirectory = async () => {
 // No, we should update UI to use the new functions.
 // But some UI parts might expect synchronous arrays. 
 // We will handle that in ui.js refactor.
+
+export const updateUserRole = async (uid, newRole) => {
+    const userRef = doc(db, "users", uid);
+    await updateDoc(userRef, { role: newRole });
+};
+
+// --- Networking Pro Credits ---
+
+export const checkAndResetProQuota = async (userId) => {
+    const userRef = doc(db, "users", userId);
+    const snap = await getDoc(userRef);
+    if (!snap.exists()) return;
+
+    const data = snap.data();
+    const currentPeriod = new Date().toISOString().slice(0, 7); // YYYY-MM
+
+    if (data.proQuotaPeriod !== currentPeriod) {
+        // New month, reset quota
+        await updateDoc(userRef, {
+            proQuotaPeriod: currentPeriod,
+            proUnlockCount: 0
+        });
+        return { count: 0, period: currentPeriod };
+    }
+    return { count: data.proUnlockCount || 0, period: data.proQuotaPeriod };
+};
+
+export const getUnlockedContacts = async (userId) => {
+    // Determine active unlocks.
+    // In a real app we might query subcollection.
+    // simpler: users/{uid}/unlockedContacts/{targetUid}
+    // We can just fetch all and filter by date.
+    const unlocksRef = collection(db, `users/${userId}/unlockedContacts`);
+    const q = query(unlocksRef); 
+    const snap = await getDocs(q);
+    const unlocks = {};
+    const now = new Date();
+    
+    snap.forEach(d => {
+        const data = d.data();
+        const expiresAt = new Date(data.expiresAt); // stored as ISO string or timestamp
+        if (expiresAt > now) {
+            unlocks[d.id] = true;
+        }
+    });
+    return unlocks;
+};
+
+export const unlockContact = async (userId, targetId) => {
+    const userRef = doc(db, "users", userId);
+    const targetUnlockRef = doc(db, `users/${userId}/unlockedContacts/${targetId}`);
+    
+    // We assume validation happened in UI/Controller (Optimistic), but ideally transaction here.
+    const snap = await getDoc(userRef);
+    const count = snap.data().proUnlockCount || 0;
+    
+    if (count >= 5) throw new Error("Has alcanzado tu límite mensual de 5 contactos.");
+
+    await updateDoc(userRef, {
+        proUnlockCount: count + 1
+    });
+
+    const expires = new Date();
+    expires.setHours(expires.getHours() + 24);
+
+    await setDoc(targetUnlockRef, {
+        unlockedAt: new Date().toISOString(),
+        expiresAt: expires.toISOString(),
+        targetId: targetId
+    });
+};

@@ -41,12 +41,12 @@ export const setOnLogout = (fn) => { onLogout = fn; };
 // Auth Subscription & Data Listener
 let unsubscribeUserDoc = null;
 
-onAuthStateChanged(auth, (user) => {
+onAuthStateChanged(auth, async (user) => {
     if (user) {
         // User is signed in. Using onSnapshot to handle race condition on registration.
         if (unsubscribeUserDoc) unsubscribeUserDoc(); // Clear previous if any
 
-        unsubscribeUserDoc = onSnapshot(doc(db, "users", user.uid), (docSnap) => {
+        unsubscribeUserDoc = onSnapshot(doc(db, "users", user.uid), async (docSnap) => {
             if (docSnap.exists()) {
                 const profileData = docSnap.data();
                 currentUser = { 
@@ -56,6 +56,13 @@ onAuthStateChanged(auth, (user) => {
                     photoURL: user.photoURL,
                     ...profileData 
                 };
+
+                // Check for disabled account
+                if (currentUser.role === 'disabled') {
+                    await signOut(auth);
+                    showToast('Tu cuenta ha sido deshabilitada. Contacta al administrador.', 'error');
+                    return;
+                }
             } else {
                 // Profile might not exist YET (in middle of registration), or legacy.
                 currentUser = {

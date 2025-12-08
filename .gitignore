@@ -90,3 +90,7 @@ typings/
 
 # Vite dist
 dist
+
+# env file
+.env
+env.txt

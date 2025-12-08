@@ -136,46 +136,35 @@ export const renderMeetings = (meetings, users, currentUser, showEditModal) => {
         meetingEl.className = 'border-l-4 pl-4 relative';
         meetingEl.style.borderColor = '#4B5563';
         
+        // Privacy Logic
+        const isParticipant = meeting.participants && meeting.participants.includes(currentUser.id);
+        const canSeeNotes = currentUser.role === 'admin' || isParticipant;
+        const canSeeDetailedParticipants = currentUser.role === 'admin' || currentUser.role === 'pro';
+
         let participantsHTML = '';
-        if (currentUser.role === 'pro' || currentUser.role === 'admin') {
-            // resolve participants
-            const pData = (meeting.participants || []).map(uid => users[uid]).filter(Boolean);
-            
-            participantsHTML = `
-                <h4 class="font-semibold mt-3 mb-2">Participantes:</h4>
+        const pData = (meeting.participants || []).map(uid => users[uid]).filter(Boolean);
+
+        if (pData.length > 0) {
+            participantsHTML = `<h4 class="font-semibold mt-3 mb-2">Participantes:</h4>`;
+            if (canSeeDetailedParticipants) {
+                participantsHTML += `
                 <ul class="list-disc list-inside text-sm space-y-1">
                     ${pData.map(p => `<li><strong>${p.name}</strong> (${p.position || ''}, ${p.company || ''})</li>`).join('')}
                 </ul>`;
-        }
-
-        let adminActions = '';
-        if (currentUser.role === 'admin') {
-            adminActions = `
-                <div class="absolute top-0 right-0">
-                    <button data-meeting-id="${meeting.id}" class="edit-meeting-btn p-1 text-gray-500 hover:text-gray-800">
-                        <i data-lucide="edit" class="w-4 h-4"></i>
-                    </button>
-                </div>
-            `;
-        }
-
-        // Date format
-        let dDate = meeting.date;
-        try { 
-            if(meeting.date.includes('T')) {
-                dDate = new Date(meeting.date).toLocaleDateString();
             } else {
-                 // Fix YYYY-MM-DD timezone issue
-                 const [y, m, d] = meeting.date.split('-');
-                 dDate = `${d}/${m}/${y}`;
+                // Socio7x7 view: Names only, blurred details
+                participantsHTML += `
+                <ul class="list-disc list-inside text-sm space-y-1">
+                    ${pData.map(p => `<li>${p.name} <span class="text-xs text-gray-400 italic">(Hazte Pro para ver detalles)</span></li>`).join('')}
+                </ul>`;
             }
-        } catch(e){}
+        }
 
         meetingEl.innerHTML = `
             ${adminActions}
             <h3 class="font-bold text-lg">${meeting.title}</h3>
             <p class="text-sm text-gray-500 mb-2">${dDate}</p>
-            ${ (currentUser.role === 'pro' || currentUser.role === 'admin') ? `<p class="text-gray-700">${meeting.summary}</p>` : '' }
+            ${ canSeeNotes ? `<p class="text-gray-700 bg-gray-50 p-2 rounded border border-gray-100">${meeting.summary || 'Sin resumen disponible.'}</p>` : `<p class="text-gray-400 italic text-sm">Resumen visible solo para participantes.</p>` }
             ${participantsHTML}`;
         list.appendChild(meetingEl);
     });
@@ -189,7 +178,7 @@ export const renderMeetings = (meetings, users, currentUser, showEditModal) => {
     }
 }
 
-export const renderDirectory = (users, currentUser, searchTerm = '') => {
+export const renderDirectory = (users, currentUser, searchTerm = '', unlockedContacts = {}) => {
     const list = document.getElementById('directory-list');
     if (!list) return;
     list.innerHTML = '';
@@ -197,29 +186,77 @@ export const renderDirectory = (users, currentUser, searchTerm = '') => {
     
     Object.values(users).forEach(user => {
         if (!user.name) return;
+        if (user.id === currentUser.id) return; // Don't show self? Optional.
+
         if (user.name.toLowerCase().includes(lowerCaseSearch) || (user.company && user.company.toLowerCase().includes(lowerCaseSearch))) {
             const card = document.createElement('div');
-            card.className = 'p-4 border rounded-lg bg-white flex flex-col items-center text-center';
-            let actionsHTML = '';
+            card.className = 'p-4 border rounded-lg bg-white flex flex-col items-center text-center relative';
             
-            // Logic for actions based on role...
-            if (currentUser.role === 'admin') {
-                actionsHTML = `<div class="mt-2 text-xs text-gray-500">${user.email}</div>`;
-            }
-
             const roleBadges = { socio7x7: '<span class="badge badge-socio7x7">Socio7x7</span>', pro: '<span class="badge badge-pro">Pro</span>', admin: '<span class="badge badge-admin">Admin</span>' };
             const roleHTML = user.role ? `<div class="mt-2">${roleBadges[user.role] || ''}</div>` : '';
+
+            // Privacy / Reveal Logic
+            let contactDetailsHTML = '';
+            
+            if (currentUser.role === 'admin') {
+                // Admin sees all
+                contactDetailsHTML = `
+                    <div class="mt-3 text-sm text-gray-600 space-y-1">
+                        <p>${user.email}</p>
+                        <p>${user.phone || 'Sin teléfono'}</p>
+                        <p class="font-medium text-gray-800">${user.company || ''}</p>
+                    </div>`;
+            } else if (currentUser.role === 'pro') {
+                // Pro Logic
+                if (unlockedContacts[user.id]) {
+                     // Unlocked
+                     contactDetailsHTML = `
+                    <div class="mt-3 text-sm text-gray-600 space-y-1 bg-green-50 p-2 rounded border border-green-100">
+                        <p class="text-xs text-green-700 font-bold mb-1">¡Desbloqueado!</p>
+                        <p>${user.email}</p>
+                        <p>${user.phone || 'Sin teléfono'}</p>
+                        <p class="font-medium text-gray-800">${user.company || ''}</p>
+                    </div>`;
+                } else {
+                    // Locked - Show Button
+                    contactDetailsHTML = `
+                    <div class="mt-4">
+                        <button class="unlock-contact-btn btn bg-gray-800 text-white text-xs px-3 py-2 rounded hover:bg-gray-700 transition" data-uid="${user.id}" data-name="${user.name}">
+                            <i data-lucide="lock" class="w-3 h-3 inline mr-1"></i>
+                            Ver Datos (1 Crédito)
+                        </button>
+                    </div>`;
+                }
+            } else {
+                // Socio7x7 Logic
+                contactDetailsHTML = `
+                    <div class="mt-3 text-xs text-gray-400 italic">
+                        Hazte Pro para ver datos de contacto
+                    </div>`;
+            }
 
             card.innerHTML = `
                 <img src="${user.photoURL || 'https://placehold.co/100'}" class="w-16 h-16 rounded-full mb-3" alt="${user.name}">
                 <h4 class="font-bold text-md">${user.name}</h4>
                 <p class="text-sm text-gray-600">${user.position || ''}</p>
-                <p class="text-sm text-gray-500">${user.company || ''}</p>
                 ${roleHTML}
-                ${actionsHTML}`;
+                ${contactDetailsHTML}
+                
+                ${(currentUser.role === 'admin') ? `
+                <div class="mt-3 w-full border-t pt-2">
+                    <label class="text-xs text-gray-500 block mb-1">Cambiar Rol:</label>
+                    <select class="role-selector block w-full p-1 text-xs border rounded" data-uid="${user.id}">
+                        <option value="socio7x7" ${user.role === 'socio7x7' ? 'selected' : ''}>Socio7x7</option>
+                        <option value="pro" ${user.role === 'pro' ? 'selected' : ''}>Pro</option>
+                        <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>Admin</option>
+                        <option value="disabled" ${user.role === 'disabled' ? 'selected' : ''}>Desactivado</option>
+                    </select>
+                </div>` : ''}`;
+            
             list.appendChild(card);
         }
     });
+    createIcons();
 }
 
 export const renderDashboardStats = (statsData, currentUser) => {
