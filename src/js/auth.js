@@ -167,6 +167,13 @@ export const handleRegister = async (e) => {
     const name = document.getElementById('register-name').value;
     const email = document.getElementById('register-email').value;
     const password = document.getElementById('register-password').value;
+    const confirmPassword = document.getElementById('register-confirm-password').value;
+    
+    if (password !== confirmPassword) {
+        showToast('Las contraseñas no coinciden', 'error');
+        return;
+    }
+
     const company = document.getElementById('register-company').value;
     const position = document.getElementById('register-position').value;
     const phone = document.getElementById('register-phone').value;
