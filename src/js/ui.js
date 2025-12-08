@@ -267,10 +267,13 @@ export const renderDirectory = (users, currentUser, searchTerm = '', unlockedCon
                     </div>`;
                 }
             } else {
-                // Socio7x7 Logic
+                // Socio7x7 Logic - Show "Locked" state but cleaner
                 contactDetailsHTML = `
-                    <div class="mt-3 text-xs text-gray-400 italic">
-                        Hazte Pro para ver datos de contacto
+                    <div class="mt-4">
+                         <a href="https://www.red7x7.cl/suscripcion" target="_blank" class="block w-full text-center py-2 px-3 rounded bg-slate-100 text-slate-500 text-xs font-medium border border-slate-200 hover:bg-slate-200 transition-colors">
+                            <i data-lucide="lock" class="w-3 h-3 inline mr-1"></i>
+                             Datos solo para Pros
+                        </a>
                     </div>`;
             }
 

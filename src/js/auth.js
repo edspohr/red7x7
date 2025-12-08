@@ -134,7 +134,11 @@ export const handleGoogleLogin = async () => {
         // onAuthStateChanged will handle the rest
     } catch (error) {
         console.error("Google Login Error:", error);
-        showToast("Error iniciando sesión con Google", "error");
+        let msg = "Error iniciando sesión con Google";
+        if(error.code === 'auth/popup-closed-by-user') msg = "Ventana cerrada antes de completar.";
+        if(error.code === 'auth/configuration-not-found') msg = "Falta configurar Google Auth en Firebase.";
+        if(error.code === 'auth/unauthorized-domain') msg = "Dominio no autorizado en Firebase.";
+        showToast(msg, "error");
     }
 };
 
