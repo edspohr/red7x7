@@ -29,11 +29,6 @@ export const addAnnouncement = async (text, isPinned = false, author = "Admin") 
         author,
         date: new Date().toISOString()
     });
-    await addDoc(collection(db, "announcements"), {
-        text,
-        isPinned,
-        author,
-        date: new Date().toISOString()
     });
 };
 
