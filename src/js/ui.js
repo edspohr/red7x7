@@ -108,11 +108,16 @@ export const renderHeader = (currentUser) => {
     const upgradeBtn = document.getElementById('upgrade-to-pro-btn');
     if (upgradeBtn) {
         if(currentUser.role === 'socio7x7'){
-            upgradeBtn.classList.remove('hidden');
+             upgradeBtn.style.display = 'inline-flex'; // Use flex for icon alignment
+             upgradeBtn.classList.remove('hidden');
         } else {
-            upgradeBtn.classList.add('hidden');
+             upgradeBtn.style.display = 'none';
+             upgradeBtn.classList.add('hidden');
         }
     }
+    
+    // Refresh icons in header if they were just rendered/hidden
+    if(window.lucide) window.lucide.createIcons();
 }
 
 export const renderAnnouncements = (announcements, currentUser) => {
@@ -149,18 +154,16 @@ export const renderAnnouncements = (announcements, currentUser) => {
                  displayDate = `${d}/${m}/${y}`;
              }
         } catch(e) {}
-
-
+        
         annEl.innerHTML = `
             ${adminActions}
-            <p class="text-gray-800 pr-12">${ann.text}</p>
-            <div class="flex justify-between items-center mt-2 text-xs text-gray-500">
-                <span>Por: ${ann.author || 'Admin'} - ${displayDate}</span>
-                ${ann.isPinned ? `<span class="text-yellow-600 flex items-center"><i data-lucide="pin" class="w-4 h-4 mr-1"></i> Fijado</span>` : ''}
-            </div>`;
+            <h3 class="font-bold text-lg mb-1">${ann.text}</h3>
+            <p class="text-xs text-gray-500 text-right">${displayDate}</p>
+        `;
         list.appendChild(annEl);
     });
-    createIcons();
+    // Create icons for the pinned/unpinned buttons
+    if(window.lucide) window.lucide.createIcons();
 }
 
 export const renderMeetings = (meetings, users, currentUser, showEditModal) => {
@@ -381,8 +384,14 @@ export const renderAdminPanels = (currentUser, users = {}) => {
     const adminPanels = document.getElementById('admin-panels-container');
     const meetingPanel = document.getElementById('admin-meeting-panel');
     if (currentUser && currentUser.role === 'admin') {
-        adminPanels.classList.remove('hidden');
-        meetingPanel.classList.remove('hidden');
+        if(adminPanels) {
+             adminPanels.style.display = 'block';
+             adminPanels.classList.remove('hidden');
+        }
+        if(meetingPanel) {
+             meetingPanel.style.display = 'block';
+             meetingPanel.classList.remove('hidden');
+        }
         
         const today = new Date().toISOString().split('T')[0];
         const dateInput = document.getElementById('meeting-date');
@@ -394,15 +403,21 @@ export const renderAdminPanels = (currentUser, users = {}) => {
             participantsList.innerHTML = '';
             Object.values(users).forEach(user => {
                 participantsList.innerHTML += `
-                    <label class="flex items-center space-x-2">
+                    <label class="flex items-center space-x-2 p-1 hover:bg-gray-50 rounded">
                         <input type="checkbox" class="participant-checkbox h-4 w-4 border-gray-300 rounded" style="color: #4B5563;" value="${user.id}">
-                        <span>${user.name} (${user.company || 'N/A'})</span>
+                        <span class="text-sm">${user.name} (${user.company || 'N/A'})</span>
                     </label>`;
             });
         }
     } else {
-        if(adminPanels) adminPanels.classList.add('hidden');
-        if(meetingPanel) meetingPanel.classList.add('hidden');
+        if(adminPanels) {
+             adminPanels.style.display = 'none';
+             adminPanels.classList.add('hidden');
+        }
+        if(meetingPanel) {
+             meetingPanel.style.display = 'none';
+             meetingPanel.classList.add('hidden');
+        }
     }
 };
 
