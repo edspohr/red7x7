@@ -82,11 +82,24 @@ export const renderHeader = (currentUser) => {
     
     const userEmailRoleEl = document.getElementById('user-email-role');
     if (userEmailRoleEl) {
-        if (currentUser.role === 'pro') {
-            userEmailRoleEl.textContent = `Pro | ${currentUser.contactRequestsLeft || 0} contactos restantes`;
-        } else {
-            userEmailRoleEl.textContent = currentUser.email;
-        }
+        // Clear previous content
+        userEmailRoleEl.innerHTML = '';
+        
+        // Create Badge
+        const badge = document.createElement('span');
+        badge.className = `badge badge-${currentUser.role} mr-2`;
+        badge.textContent = currentUser.role === 'socio7x7' ? 'Socio7x7' : 
+                            currentUser.role === 'pro' ? 'Pro' : 
+                            currentUser.role === 'admin' ? 'Admin' : currentUser.role;
+        userEmailRoleEl.appendChild(badge);
+
+        // Add Email or extra info text node
+        const infoText = document.createTextNode(
+            currentUser.role === 'pro' 
+                ? `${currentUser.email} | ${currentUser.contactRequestsLeft || 0} créditos` 
+                : currentUser.email
+        );
+        userEmailRoleEl.appendChild(infoText);
     }
 
     const avatarEl = document.getElementById('user-avatar');
