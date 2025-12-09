@@ -193,11 +193,14 @@
                         <p class="text-xs text-gray-500 mt-1">La IA analizará el texto, generará un resumen y seleccionará a los participantes.</p>
                     </div>
                     
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <input id="meeting-title" type="text" placeholder="Título de la reunión" class="w-full p-2 border rounded-md">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <input id="meeting-title" type="text" placeholder="Título de la reunión" class="w-full p-2 border rounded-md md:col-span-1">
                         <input id="meeting-date" type="date" class="w-full p-2 border rounded-md">
+                        <input id="meeting-time" type="time" class="w-full p-2 border rounded-md">
                     </div>
-                    <textarea id="meeting-summary" class="w-full p-2 border rounded-md mt-4" rows="4" placeholder="Resumen de la reunión..."></textarea>
+                    <input id="meeting-id" type="hidden">
+                    <input id="meeting-location" type="text" placeholder="Lugar / Enlace (Zoom, Meet, etc.)" class="w-full p-2 border rounded-md mt-4">
+                    <textarea id="meeting-summary" class="w-full p-2 border rounded-md mt-4" rows="4" placeholder="Resumen de la reunión (Soporta Markdown: **negrita**, - lista)..."></textarea>
                     <div class="mt-4">
                         <h3 class="font-semibold mb-2">Participantes</h3>
                         <div id="meeting-participants-list" class="max-h-60 overflow-y-auto border rounded-md p-2 space-y-2">

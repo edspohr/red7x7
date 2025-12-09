@@ -137,7 +137,9 @@ export const renderAnnouncements = (announcements, currentUser) => {
                     <button data-id="${ann.id}" class="toggle-pin-btn p-1 text-gray-500 hover:text-gray-800" title="${ann.isPinned ? 'Quitar Chincheta' : 'Fijar con Chincheta'}">
                         <i data-lucide="${ann.isPinned ? 'pin-off' : 'pin'}" class="w-4 h-4"></i>
                     </button>
-                    <!-- Delete not implemented in this phase yet -->
+                    <button data-id="${ann.id}" class="delete-ann-btn p-1 text-red-400 hover:text-red-700" title="Eliminar Anuncio">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                    </button>
                 </div>
                 `;
         }
@@ -166,67 +168,138 @@ export const renderAnnouncements = (announcements, currentUser) => {
     if(window.lucide) window.lucide.createIcons();
 }
 
+// --- Helpers ---
+const parseMarkdown = (text) => {
+    if (!text) return '';
+    let html = text
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // Bold
+        .replace(/\n/g, '<br>'); // Line breaks
+    
+    // Simple list support (lines starting with - )
+    if(html.includes('- ')) {
+        html = html.replace(/<br>- (.*?)(?=<br>|$)/g, '<li>$1</li>');
+        // Wrap contiguous lis in ul? simplified: just styling items as list-like
+        // Better: just replace - with bullet point char for simplicity if not full parsing
+        html = html.replace(/- /g, '• ');
+    }
+    return html;
+};
+
+const getGoogleCalendarUrl = (meeting) => {
+    // Format dates YYYYMMDDTHHMMSSZ
+    // Simple assumption: date is YYYY-MM-DD, time is HH:MM
+    // Default duration 1 hour if not specified
+    if(!meeting.date) return '#';
+    const dateStr = meeting.date.replace(/-/g, '');
+    const timeStr = (meeting.time || '10:00').replace(/:/g, '') + '00';
+    const start = `${dateStr}T${timeStr}`;
+    // End time +1h
+    let h = parseInt(meeting.time ? meeting.time.split(':')[0] : 10) + 1;
+    const endStr = (h < 10 ? '0' + h : h) + (meeting.time ? meeting.time.split(':')[1] : '00') + '00';
+    const end = `${dateStr}T${endStr}`;
+    
+    return `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(meeting.title)}&dates=${start}/${end}&details=${encodeURIComponent(meeting.summary || '')}&location=${encodeURIComponent(meeting.location || '')}&sf=true&output=xml`;
+};
+
 export const renderMeetings = (meetings, users, currentUser, showEditModal) => {
     const list = document.getElementById('meetings-list');
     if (!list) return;
     list.innerHTML = '';
     
-    let userMeetings;
-    if (currentUser.role === 'admin') {
-        userMeetings = meetings;
-    } else {
-        // Filter logic: assume participants are stored as array of UIDs
-        userMeetings = meetings.filter(m => m.participants && m.participants.includes(currentUser.id));
-    }
-
-    if (userMeetings.length === 0) {
-        list.innerHTML = '<p class="text-gray-500">Aún no has participado en ninguna reunión registrada.</p>';
-        return;
-    }
-
-    userMeetings.forEach(meeting => {
-        const meetingEl = document.createElement('div');
-        meetingEl.className = 'border-l-4 pl-4 relative';
-        meetingEl.style.borderColor = '#4B5563';
+    const sorted = [...meetings].sort((a, b) => new Date(b.date) - new Date(a.date));
+    
+    sorted.forEach(meeting => {
+        // Filter: Current user must be in participants OR admin
+        const isParticipant = (meeting.participants || []).includes(currentUser.uid || currentUser.id);
+        const isAdmin = currentUser.role === 'admin';
         
-        // Privacy Logic
-        const isParticipant = meeting.participants && meeting.participants.includes(currentUser.id);
-        const canSeeNotes = currentUser.role === 'admin' || isParticipant;
-        const canSeeDetailedParticipants = currentUser.role === 'admin' || currentUser.role === 'pro';
-
+        if (!isParticipant && !isAdmin) return; // Hide if not involved
+        
+        const meetingEl = document.createElement('div');
+        meetingEl.className = "bg-white p-6 rounded-lg shadow-sm border border-gray-100 mb-4";
+        
+        // Admin Actions
+        let adminActions = '';
+        if (isAdmin) {
+            adminActions = `
+            <div class="flex justify-end mb-2">
+                 <button data-id="${meeting.id}" class="edit-meeting-btn text-indigo-600 hover:text-indigo-800 text-sm font-medium flex items-center">
+                    <i data-lucide="edit-2" class="w-3 h-3 mr-1"></i> Editar
+                </button>
+            </div>`;
+        }
+        
+        // Participants Logic
         let participantsHTML = '';
+        // If admin -> see all
+        // If pro -> see details?
+        // Logic: Everyone in the meeting can see who else is in it? Usually yes.
+        // Let's stick to: Socio sees names, Pro sees details.
+        
+        const canSeeDetailedParticipants = currentUser.role === 'admin' || currentUser.role === 'pro';
+        const canSeeNotes = true; // Participants can see notes
+        
         const pData = (meeting.participants || []).map(uid => users[uid]).filter(Boolean);
 
         if (pData.length > 0) {
-            participantsHTML = `<h4 class="font-semibold mt-3 mb-2">Participantes:</h4>`;
+            participantsHTML = `<h4 class="font-semibold mt-3 mb-2 text-sm">Participantes:</h4>`;
             if (canSeeDetailedParticipants) {
                 participantsHTML += `
-                <ul class="list-disc list-inside text-sm space-y-1">
-                    ${pData.map(p => `<li><strong>${p.name}</strong> (${p.position || ''}, ${p.company || ''})</li>`).join('')}
+                <ul class="text-sm space-y-1">
+                    ${pData.map(p => `<li><span class="font-medium text-gray-800">${p.name}</span> <span class="text-gray-500 text-xs">(${p.position || 'N/A'} @ ${p.company || 'N/A'})</span></li>`).join('')}
                 </ul>`;
             } else {
-                // Socio7x7 view: Names only, blurred details
-                participantsHTML += `
-                <ul class="list-disc list-inside text-sm space-y-1">
-                    ${pData.map(p => `<li>${p.name} <span class="text-xs text-gray-400 italic">(Hazte Pro para ver detalles)</span></li>`).join('')}
+                // Socio7x7 view: Names only
+                 participantsHTML += `
+                <ul class="text-sm space-y-1 text-gray-600">
+                    ${pData.map(p => `<li>${p.name}</li>`).join('')}
                 </ul>`;
             }
         }
+        
+        // Date format
+        let dDate = meeting.date;
+        try {
+             if(meeting.date.includes('T')) dDate = new Date(meeting.date).toLocaleDateString();
+             else { const [y, m, d] = meeting.date.split('-'); dDate = `${d}/${m}/${y}`; }
+        } catch(e) {}
+        
+        // Summary Markdown parsing
+        const summaryHTML = parseMarkdown(meeting.summary);
 
         meetingEl.innerHTML = `
             ${adminActions}
-            <h3 class="font-bold text-lg">${meeting.title}</h3>
-            <p class="text-sm text-gray-500 mb-2">${dDate}</p>
-            ${ canSeeNotes ? `<p class="text-gray-700 bg-gray-50 p-2 rounded border border-gray-100">${meeting.summary || 'Sin resumen disponible.'}</p>` : `<p class="text-gray-400 italic text-sm">Resumen visible solo para participantes.</p>` }
-            ${participantsHTML}`;
+            <div class="flex justify-between items-start">
+                <div>
+                     <h3 class="font-bold text-lg text-gray-900">${meeting.title}</h3>
+                     <div class="text-sm text-gray-500 mb-3 flex flex-col sm:flex-row sm:items-center gap-3 mt-1">
+                        <span class="flex items-center"><i data-lucide="calendar" class="w-3 h-3 mr-1"></i> ${dDate}</span>
+                        ${meeting.time ? `<span class="flex items-center"><i data-lucide="clock" class="w-3 h-3 mr-1"></i> ${meeting.time}</span>` : ''}
+                        ${meeting.location ? `<span class="flex items-center"><i data-lucide="map-pin" class="w-3 h-3 mr-1"></i> ${meeting.location}</span>` : ''}
+                    </div>
+                </div>
+                <a href="${getGoogleCalendarUrl(meeting)}" target="_blank" class="text-xs border border-gray-300 rounded px-2 py-1 hover:bg-gray-50 flex items-center text-gray-600" title="Agregar a Google Calendar">
+                    <i data-lucide="calendar-plus" class="w-3 h-3 mr-1"></i> Agendar
+                </a>
+            </div>
+            
+            <div class="mt-3 prose prose-sm text-gray-700 bg-gray-50 p-3 rounded border border-gray-100">
+                ${summaryHTML || '<em class="text-gray-400">Sin resumen disponible.</em>'}
+            </div>
+            
+            <div class="mt-4 border-t pt-2">
+                ${participantsHTML}
+            </div>
+            `;
         list.appendChild(meetingEl);
     });
-    createIcons();
+    // Create icons
+    if(window.lucide) window.lucide.createIcons();
     
     // Attach edit listeners
     if (showEditModal) {
         document.querySelectorAll('.edit-meeting-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => showEditModal(e.currentTarget.dataset.meetingId));
+            btn.addEventListener('click', (e) => showEditModal(e.currentTarget.dataset.id));
         });
     }
 }
@@ -235,6 +308,15 @@ export const renderDirectory = (users, currentUser, searchTerm = '', unlockedCon
     const list = document.getElementById('directory-list');
     if (!list) return;
     list.innerHTML = '';
+    
+    // Headcount
+    const countEl = document.createElement('div');
+    countEl.className = "w-full text-center text-gray-500 mb-4 text-sm";
+    const totalUsers = Object.values(users).length;
+    const matchCount = Object.values(users).filter(u => u.name && u.name.toLowerCase().includes(searchTerm.toLowerCase())).length;
+    countEl.innerHTML = `<span class="font-bold">${matchCount}</span> miembros encontrados ${searchTerm ? '(filtrado)' : `de ${totalUsers}`}`;
+    list.appendChild(countEl);
+
     const lowerCaseSearch = searchTerm.toLowerCase();
     
     Object.values(users).forEach(user => {

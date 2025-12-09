@@ -9,7 +9,8 @@ import {
     doc,
     updateDoc,
     getDoc, 
-    setDoc
+    setDoc,
+    deleteDoc
 } from "firebase/firestore";
 
 // --- Announcements ---
@@ -27,6 +28,41 @@ export const addAnnouncement = async (text, isPinned = false, author = "Admin") 
         isPinned,
         author,
         date: new Date().toISOString()
+    });
+    await addDoc(collection(db, "announcements"), {
+        text,
+        isPinned,
+        author,
+        date: new Date().toISOString()
+    });
+};
+
+export const deleteAnnouncement = async (id) => {
+    await deleteDoc(doc(db, "announcements", id));
+};
+
+export const togglePinAnnouncement = async (id, currentStatus) => {
+    await updateDoc(doc(db, "announcements", id), { isPinned: !currentStatus });
+};
+
+// --- Users (Admin Manual Add) ---
+export const addUserProfile = async (userData) => {
+    // We use setDoc with a custom ID or addDoc? 
+    // If we want them to claim it via Auth later, email is the key, but Auth UIDs are random.
+    // Strategy: Create a doc with an auto-ID. When they register, Auth creates a NEW UID.
+    // Problem: Syncing.
+    // Alternative: Just use addDoc. When they register, logic in auth.js checks for existing doc? 
+    // No, auth.js checks `doc(db, "users", user.uid)`.
+    // We cannot predict `user.uid`. 
+    // So "Manual Add" creates a "Ghost" user. Merging is hard.
+    // Compromise: Admin creates a "Ghost" user that shows in directory.
+    // If that user eventually signs up, they get a NEW profile. Admin has to delete the ghost.
+    // Unless we use Email as ID? No, Firestore Users collection is keyed by UID.
+    // Let's just use addDoc for now to populate the directory as requested.
+    await addDoc(collection(db, "users"), {
+        ...userData,
+        role: 'socio7x7',
+        createdAt: new Date().toISOString()
     });
 };
 

@@ -7,6 +7,9 @@ import {
     subscribeToMeetings, 
     addMeeting, 
     updateMeeting,
+    deleteAnnouncement,
+    togglePinAnnouncement,
+    addUserProfile,
     fetchDirectory,
     updateUserRole,
     checkAndResetProQuota,
@@ -148,6 +151,9 @@ const refreshUI = async () => {
 // --- Event Listeners ---
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Initial Icon Render
+    createIcons();
+
     // Auth Forms
     document.getElementById('login-form').addEventListener('submit', handleEmailLogin);
     document.getElementById('google-login-button').addEventListener('click', handleGoogleLogin);
@@ -201,14 +207,39 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('announcement-text').value = '';
             showToast('Anuncio publicado', 'success');
         });
+        
+        // Delegation for Pin/Delete
+        document.getElementById('announcements-list').addEventListener('click', async (e) => {
+            const pinBtn = e.target.closest('.toggle-pin-btn');
+            const delBtn = e.target.closest('.delete-ann-btn');
+            
+            if (pinBtn) {
+                const id = pinBtn.dataset.id;
+                const ann = state.announcements.find(a => a.id === id);
+                if(ann) {
+                    await togglePinAnnouncement(id, ann.isPinned);
+                    showToast(ann.isPinned ? 'Anuncio desanclado' : 'Anuncio fijado', 'success');
+                }
+            }
+            
+            if (delBtn) {
+                if(confirm('¿Eliminar este anuncio?')) {
+                    await deleteAnnouncement(delBtn.dataset.id);
+                    showToast('Anuncio eliminado', 'success');
+                }
+            }
+        });
     }
 
-    // Admin: Create Meeting
+    // Admin: Create/Edit Meeting
     const submitMeetingBtn = document.getElementById('submit-meeting');
     if(submitMeetingBtn) {
         submitMeetingBtn.addEventListener('click', async () => {
+            const id = document.getElementById('meeting-id').value; // Edit Mode ID
             const title = document.getElementById('meeting-title').value;
             const date = document.getElementById('meeting-date').value;
+            const time = document.getElementById('meeting-time').value;
+            const location = document.getElementById('meeting-location').value;
             const summary = document.getElementById('meeting-summary').value;
             
             if (!title || !date) return showToast('Completa título y fecha', 'warning');
@@ -216,18 +247,70 @@ document.addEventListener('DOMContentLoaded', () => {
             // Collect selected participants
             const selected = Array.from(document.querySelectorAll('.participant-checkbox:checked')).map(cb => cb.value);
             
-            await addMeeting({
-                title,
-                date,
-                summary,
-                participants: selected,
-                createdAt: new Date().toISOString()
-            });
-            
-            showToast('Reunión registrada', 'success');
-            // Clear form
-            document.getElementById('meeting-title').value = '';
-            document.getElementById('meeting-summary').value = '';
+            try {
+                if (id) {
+                    await updateMeeting(id, {
+                        title, date, time, location, summary, participants: selected
+                    });
+                    showToast('Reunión actualizada', 'success');
+                } else {
+                    await addMeeting({
+                        title, date, time, location, summary, participants: selected,
+                        createdAt: new Date().toISOString()
+                    });
+                    showToast('Reunión registrada', 'success');
+                }
+                
+                // Clear form & Reset Mode
+                document.getElementById('meeting-id').value = '';
+                document.getElementById('meeting-title').value = '';
+                document.getElementById('meeting-date').value = '';
+                document.getElementById('meeting-time').value = '';
+                document.getElementById('meeting-location').value = '';
+                document.getElementById('meeting-summary').value = '';
+                document.querySelectorAll('.participant-checkbox').forEach(cb => cb.checked = false);
+                submitMeetingBtn.innerHTML = '<i data-lucide="calendar-plus" class="w-4 h-4 mr-2"></i> Registrar Reunión';
+                createIcons(); // Refresh icon on button
+                
+            } catch(e) {
+                console.error(e);
+                showToast('Error al guardar reunión', 'error');
+            }
+        });
+    }
+
+    // Meeting Actions (Edit Delegation)
+    const meetingsList = document.getElementById('meetings-list');
+    if(meetingsList) {
+        meetingsList.addEventListener('click', (e) => {
+            const editBtn = e.target.closest('.edit-meeting-btn');
+            if (editBtn) {
+                const id = editBtn.dataset.id;
+                const meeting = state.meetings.find(m => m.id === id);
+                if (meeting) {
+                    // Populate Form
+                    document.getElementById('meeting-id').value = meeting.id;
+                    document.getElementById('meeting-title').value = meeting.title;
+                    document.getElementById('meeting-date').value = meeting.date;
+                    if(meeting.time) document.getElementById('meeting-time').value = meeting.time;
+                    if(meeting.location) document.getElementById('meeting-location').value = meeting.location;
+                    if(meeting.summary) document.getElementById('meeting-summary').value = meeting.summary;
+                    
+                    // Participants
+                    document.querySelectorAll('.participant-checkbox').forEach(cb => {
+                        cb.checked = (meeting.participants || []).includes(cb.value);
+                    });
+                    
+                    // Change Button State
+                    const btn = document.getElementById('submit-meeting');
+                    btn.innerHTML = '<i data-lucide="save" class="w-4 h-4 mr-2"></i> Actualizar Reunión';
+                    createIcons();
+                    
+                    // Scroll to form (top)
+                    document.getElementById('admin-panels-container').scrollIntoView({ behavior: 'smooth' });
+                    showToast('Editando reunión...', 'info');
+                }
+            }
         });
     }
     
@@ -240,6 +323,32 @@ document.addEventListener('DOMContentLoaded', () => {
     if(searchInput) {
         searchInput.addEventListener('input', (e) => {
             renderDirectory(state.users, state.currentUser, e.target.value, state.unlockedContacts);
+        });
+    }
+
+    // Admin: Add Manual User
+    const addUserForm = document.getElementById('add-user-form');
+    if(addUserForm) {
+        addUserForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('add-user-name').value;
+            const email = document.getElementById('add-user-email').value;
+            const company = document.getElementById('add-user-company').value;
+            const position = document.getElementById('add-user-position').value;
+            const phone = document.getElementById('add-user-phone').value;
+            
+            try {
+                await addUserProfile({ name, email, company, position, phone });
+                showToast('Usuario añadido al directorio', 'success');
+                addUserForm.reset();
+                // Refresh? Directory subscription/fetch should handle it if one-time fetch re-runs or we manually fetch.
+                // Current implementation is a one-time fetch in setOnLoginSuccess. We might need to manually update state.users.
+                state.users = await fetchDirectory();
+                refreshUI();
+            } catch(error) {
+                console.error(error);
+                showToast('Error añadiendo usuario', 'error');
+            }
         });
     }
 
