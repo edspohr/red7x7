@@ -6,7 +6,9 @@ import {
     onAuthStateChanged,
     updateProfile,
     GoogleAuthProvider,
-    signInWithPopup 
+    GoogleAuthProvider,
+    signInWithPopup,
+    sendPasswordResetEmail
 } from "firebase/auth";
 import { doc, getDoc, setDoc, updateDoc, onSnapshot } from "firebase/firestore";
 import Toastify from 'toastify-js';
@@ -60,13 +62,15 @@ onAuthStateChanged(auth, async (user) => {
                     photoURL: user.photoURL,
                     ...profileData 
                 };
-
                 // Check for disabled account
                 if (currentUser.role === 'disabled') {
                     await signOut(auth);
                     showToast('Tu cuenta ha sido deshabilitada. Contacta al administrador.', 'error');
                     return;
                 }
+                
+                // Hardcode Admin for espohr@gmail.com to ensure access even if DB is empty
+                if(currentUser.email === 'espohr@gmail.com') currentUser.role = 'admin';
             } else {
                 // Profile might not exist YET (in middle of registration), or legacy.
                 currentUser = {
@@ -217,10 +221,20 @@ export const handleRegister = async (e) => {
 
 export const handleForgotPassword = async (e) => {
     e.preventDefault();
-    // For now just toast, as implementation plan didn't specify strict password reset flow yet
-    // but we can add sendPasswordResetEmail logic easily.
-    showToast(`Funcionalidad de recuperación próximamente disponible con Firebase.`, 'info');
-    document.getElementById('forgot-password-form').reset();
+    const email = document.getElementById('forgot-email').value;
+    if(!email) return showToast('Ingresa tu correo', 'warning');
+
+    try {
+        await sendPasswordResetEmail(auth, email);
+        showToast(`Correo de recuperación enviado a ${email}`, 'success');
+        document.getElementById('forgot-password-form').reset();
+        // Switch back to login? Or let user do it.
+    } catch (error) {
+         console.error("Reset Password Error:", error);
+         let msg = "Error al enviar correo";
+         if(error.code === 'auth/user-not-found') msg = "No existe cuenta con este correo";
+         showToast(msg, 'error');
+    }
 };
 
 export const handleLogout = async () => {

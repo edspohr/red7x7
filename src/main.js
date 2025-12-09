@@ -1,6 +1,9 @@
 import './style.css';
 import "toastify-js/src/toastify.css";
-import { createIcons } from 'lucide';
+import { createIcons, icons } from 'lucide';
+
+// Expose Lucide to window for ui.js to use
+window.lucide = { createIcons, icons };
 import { 
     subscribeToAnnouncements, 
     addAnnouncement, 
@@ -152,7 +155,9 @@ const refreshUI = async () => {
 
 document.addEventListener('DOMContentLoaded', () => {
     // Initial Icon Render
-    createIcons();
+    if(window.lucide && window.lucide.createIcons) {
+        window.lucide.createIcons({ icons: window.lucide.icons });
+    }
 
     // Auth Forms
     document.getElementById('login-form').addEventListener('submit', handleEmailLogin);

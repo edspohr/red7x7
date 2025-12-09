@@ -117,7 +117,7 @@ export const renderHeader = (currentUser) => {
     }
     
     // Refresh icons in header if they were just rendered/hidden
-    if(window.lucide) window.lucide.createIcons();
+    if(window.lucide) window.lucide.createIcons({ icons: window.lucide.icons });
 }
 
 export const renderAnnouncements = (announcements, currentUser) => {
@@ -126,6 +126,11 @@ export const renderAnnouncements = (announcements, currentUser) => {
     list.innerHTML = '';
     
     const sorted = [...announcements].sort((a, b) => (b.isPinned === a.isPinned) ? 0 : b.isPinned ? 1 : -1);
+    
+    if (sorted.length === 0) {
+        list.innerHTML = `<div class="text-center text-gray-400 py-8 italic">No hay anuncios publicados.</div>`;
+        return;
+    }
     
     sorted.forEach(ann => {
         const annEl = document.createElement('div');
@@ -207,6 +212,11 @@ export const renderMeetings = (meetings, users, currentUser, showEditModal) => {
     list.innerHTML = '';
     
     const sorted = [...meetings].sort((a, b) => new Date(b.date) - new Date(a.date));
+    
+    if (sorted.length === 0) {
+        list.innerHTML = `<div class="text-center text-gray-400 py-8 italic">No hay reuniones programadas.</div>`;
+        return;
+    }
     
     sorted.forEach(meeting => {
         // Filter: Current user must be in participants OR admin
@@ -294,7 +304,7 @@ export const renderMeetings = (meetings, users, currentUser, showEditModal) => {
         list.appendChild(meetingEl);
     });
     // Create icons
-    if(window.lucide) window.lucide.createIcons();
+    if(window.lucide) window.lucide.createIcons({ icons: window.lucide.icons });
     
     // Attach edit listeners
     if (showEditModal) {
@@ -316,6 +326,14 @@ export const renderDirectory = (users, currentUser, searchTerm = '', unlockedCon
     const matchCount = Object.values(users).filter(u => u.name && u.name.toLowerCase().includes(searchTerm.toLowerCase())).length;
     countEl.innerHTML = `<span class="font-bold">${matchCount}</span> miembros encontrados ${searchTerm ? '(filtrado)' : `de ${totalUsers}`}`;
     list.appendChild(countEl);
+
+    if (matchCount === 0) {
+        const emptyData = document.createElement('div');
+        emptyData.className = "text-center text-gray-400 py-8 italic";
+        emptyData.innerText = "No se encontraron miembros.";
+        list.appendChild(emptyData);
+        return; 
+    }
 
     const lowerCaseSearch = searchTerm.toLowerCase();
     
