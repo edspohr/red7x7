@@ -275,7 +275,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('meeting-summary').value = '';
                 document.querySelectorAll('.participant-checkbox').forEach(cb => cb.checked = false);
                 submitMeetingBtn.innerHTML = '<i data-lucide="calendar-plus" class="w-4 h-4 mr-2"></i> Registrar Reunión';
-                createIcons(); // Refresh icon on button
+                if(window.lucide) window.lucide.createIcons({ icons: window.lucide.icons }); // Refresh icon on button
                 
             } catch(e) {
                 console.error(e);
@@ -309,7 +309,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Change Button State
                     const btn = document.getElementById('submit-meeting');
                     btn.innerHTML = '<i data-lucide="save" class="w-4 h-4 mr-2"></i> Actualizar Reunión';
-                    createIcons();
+                    if(window.lucide) window.lucide.createIcons({ icons: window.lucide.icons });
                     
                     // Scroll to form (top)
                     document.getElementById('admin-panels-container').scrollIntoView({ behavior: 'smooth' });
@@ -434,7 +434,7 @@ document.addEventListener('DOMContentLoaded', () => {
         showToast('Reunión actualizada', 'success');
     });
 
-    createIcons();
+    if(window.lucide) window.lucide.createIcons({ icons: window.lucide.icons });
 });
 
 // Helper for Edit Modal

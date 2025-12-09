@@ -1,5 +1,30 @@
 import { createIcons } from 'lucide';
 
+// --- Helper: Normalize Role Check ---
+const isAdmin = (user) => user?.role?.toLowerCase().trim() === 'admin';
+const isPro = (user) => user?.role?.toLowerCase().trim() === 'pro';
+const isSocio = (user) => user?.role?.toLowerCase().trim() === 'socio7x7';
+
+// --- Helper: Safe Icon Refresh ---
+const refreshIcons = () => {
+    try {
+        if (window.lucide && window.lucide.createIcons && window.lucide.icons) {
+            window.lucide.createIcons({ icons: window.lucide.icons });
+        }
+    } catch (e) {
+        console.warn('Icon refresh failed:', e);
+    }
+};
+
+// --- Helper: Avatar with Initials Fallback ---
+const getAvatarUrl = (user) => {
+    if (user?.photoURL) return user.photoURL;
+    const name = user?.name || 'User';
+    const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+    // Using UI Avatars service for nice initials avatars
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent(initials)}&background=4B5563&color=fff&size=100&bold=true`;
+};
+
 // --- Helper: Screen & Form Management ---
 
 export const showAuthForm = (form) => {
@@ -85,29 +110,27 @@ export const renderHeader = (currentUser) => {
         // Clear previous content
         userEmailRoleEl.innerHTML = '';
         
-        // Create Badge
+        // Create Badge with normalized role
         const badge = document.createElement('span');
-        badge.className = `badge badge-${currentUser.role} mr-2`;
-        badge.textContent = currentUser.role === 'socio7x7' ? 'Socio7x7' : 
-                            currentUser.role === 'pro' ? 'Pro' : 
-                            currentUser.role === 'admin' ? 'Admin' : currentUser.role;
+        const normalizedRole = isAdmin(currentUser) ? 'admin' : isPro(currentUser) ? 'pro' : 'socio7x7';
+        badge.className = `badge badge-${normalizedRole} mr-2`;
+        badge.textContent = isSocio(currentUser) ? 'Socio7x7' : 
+                            isPro(currentUser) ? 'Pro' : 
+                            isAdmin(currentUser) ? 'Admin' : currentUser.role;
         userEmailRoleEl.appendChild(badge);
 
         // Add Email or extra info text node
         const infoText = document.createTextNode(
-            currentUser.role === 'pro' 
+            isPro(currentUser) 
                 ? `${currentUser.email} | ${currentUser.contactRequestsLeft || 0} créditos` 
                 : currentUser.email
         );
         userEmailRoleEl.appendChild(infoText);
     }
-
-    const avatarEl = document.getElementById('user-avatar');
-    if (avatarEl) avatarEl.src = currentUser.photoURL || 'https://placehold.co/100';
     
     const upgradeBtn = document.getElementById('upgrade-to-pro-btn');
     if (upgradeBtn) {
-        if(currentUser.role === 'socio7x7'){
+        if(isSocio(currentUser)){
              upgradeBtn.style.display = 'inline-flex'; // Use flex for icon alignment
              upgradeBtn.classList.remove('hidden');
         } else {
@@ -136,7 +159,7 @@ export const renderAnnouncements = (announcements, currentUser) => {
         const annEl = document.createElement('div');
         annEl.className = `relative p-4 rounded-lg border ${ann.isPinned ? 'bg-yellow-50 border-yellow-300' : 'bg-gray-50 border-gray-200'}`;
         let adminActions = '';
-        if (currentUser && currentUser.role === 'admin') {
+        if (currentUser && isAdmin(currentUser)) {
             adminActions = `
                 <div class="absolute top-2 right-2 flex space-x-1">
                     <button data-id="${ann.id}" class="toggle-pin-btn p-1 text-gray-500 hover:text-gray-800" title="${ann.isPinned ? 'Quitar Chincheta' : 'Fijar con Chincheta'}">
@@ -170,7 +193,7 @@ export const renderAnnouncements = (announcements, currentUser) => {
         list.appendChild(annEl);
     });
     // Create icons for the pinned/unpinned buttons
-    if(window.lucide) window.lucide.createIcons();
+    if(window.lucide) refreshIcons();
 }
 
 // --- Helpers ---
@@ -221,16 +244,16 @@ export const renderMeetings = (meetings, users, currentUser, showEditModal) => {
     sorted.forEach(meeting => {
         // Filter: Current user must be in participants OR admin
         const isParticipant = (meeting.participants || []).includes(currentUser.uid || currentUser.id);
-        const isAdmin = currentUser.role === 'admin';
+        const isAdminUser = isAdmin(currentUser);
         
-        if (!isParticipant && !isAdmin) return; // Hide if not involved
+        if (!isParticipant && !isAdminUser) return; // Hide if not involved
         
         const meetingEl = document.createElement('div');
         meetingEl.className = "bg-white p-6 rounded-lg shadow-sm border border-gray-100 mb-4";
         
         // Admin Actions
         let adminActions = '';
-        if (isAdmin) {
+        if (isAdminUser) {
             adminActions = `
             <div class="flex justify-end mb-2">
                  <button data-id="${meeting.id}" class="edit-meeting-btn text-indigo-600 hover:text-indigo-800 text-sm font-medium flex items-center">
@@ -246,7 +269,7 @@ export const renderMeetings = (meetings, users, currentUser, showEditModal) => {
         // Logic: Everyone in the meeting can see who else is in it? Usually yes.
         // Let's stick to: Socio sees names, Pro sees details.
         
-        const canSeeDetailedParticipants = currentUser.role === 'admin' || currentUser.role === 'pro';
+        const canSeeDetailedParticipants = isAdmin(currentUser) || isPro(currentUser);
         const canSeeNotes = true; // Participants can see notes
         
         const pData = (meeting.participants || []).map(uid => users[uid]).filter(Boolean);
@@ -329,8 +352,8 @@ export const renderDirectory = (users, currentUser, searchTerm = '', unlockedCon
 
     if (matchCount === 0) {
         const emptyData = document.createElement('div');
-        emptyData.className = "text-center text-gray-400 py-8 italic";
-        emptyData.innerText = "No se encontraron miembros.";
+        emptyData.className = "text-center text-gray-400 py-8 italic col-span-full";
+        emptyData.innerText = "No hay usuarios en el directorio.";
         list.appendChild(emptyData);
         return; 
     }
@@ -339,7 +362,7 @@ export const renderDirectory = (users, currentUser, searchTerm = '', unlockedCon
     
     Object.values(users).forEach(user => {
         if (!user.name) return;
-        if (user.id === currentUser.id) return; // Don't show self? Optional.
+        // Note: Self-exclusion removed - all users appear in directory
 
         if (user.name.toLowerCase().includes(lowerCaseSearch) || (user.company && user.company.toLowerCase().includes(lowerCaseSearch))) {
             const card = document.createElement('div');
@@ -351,7 +374,7 @@ export const renderDirectory = (users, currentUser, searchTerm = '', unlockedCon
             // Privacy / Reveal Logic
             let contactDetailsHTML = '';
             
-            if (currentUser.role === 'admin') {
+            if (isAdmin(currentUser)) {
                 // Admin sees all
                 contactDetailsHTML = `
                     <div class="mt-3 text-sm text-gray-600 space-y-1">
@@ -360,7 +383,7 @@ export const renderDirectory = (users, currentUser, searchTerm = '', unlockedCon
                         <p class="font-medium text-gray-800">${user.company || ''}</p>
                         ${user.description ? `<p class="text-xs text-gray-500 mt-1 italic">"${user.description}"</p>` : ''}
                     </div>`;
-            } else if (currentUser.role === 'pro') {
+            } else if (isPro(currentUser)) {
                 // Pro Logic
                 if (unlockedContacts[user.id]) {
                      // Unlocked
@@ -394,13 +417,12 @@ export const renderDirectory = (users, currentUser, searchTerm = '', unlockedCon
             }
 
             card.innerHTML = `
-                <img src="${user.photoURL || 'https://placehold.co/100'}" class="w-16 h-16 rounded-full mb-3" alt="${user.name}">
                 <h4 class="font-bold text-md">${user.name}</h4>
                 <p class="text-sm text-gray-600">${user.position || ''}</p>
                 ${roleHTML}
                 ${contactDetailsHTML}
                 
-                ${(currentUser.role === 'admin') ? `
+                ${(isAdmin(currentUser)) ? `
                 <div class="mt-3 w-full border-t pt-2">
                     <label class="text-xs text-gray-500 block mb-1">Cambiar Rol:</label>
                     <select class="role-selector block w-full p-1 text-xs border rounded" data-uid="${user.id}">
@@ -414,7 +436,7 @@ export const renderDirectory = (users, currentUser, searchTerm = '', unlockedCon
             list.appendChild(card);
         }
     });
-    createIcons();
+    refreshIcons();
 }
 
 export const renderDashboardStats = (statsData, currentUser) => {
@@ -440,14 +462,14 @@ export const renderDashboardStats = (statsData, currentUser) => {
         }
     ];
 
-    if (currentUser.role === 'pro') {
+    if (isPro(currentUser)) {
          stats.push({ 
             title: 'Contactos Restantes', 
             val: statsData.contactRequestsLeft || 0, 
             icon: 'user-plus', 
             color: (statsData.contactRequestsLeft > 0) ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-600' 
         });
-    } else if (currentUser.role === 'admin') {
+    } else if (isAdmin(currentUser)) {
          stats.push({ 
             title: 'Total Usuarios', 
             val: statsData.userCount || 0, 
@@ -477,13 +499,13 @@ export const renderDashboardStats = (statsData, currentUser) => {
         `;
         statsContainer.appendChild(card);
     });
-    createIcons();
+    refreshIcons();
 };
 
 export const renderAdminPanels = (currentUser, users = {}) => {
     const adminPanels = document.getElementById('admin-panels-container');
     const meetingPanel = document.getElementById('admin-meeting-panel');
-    if (currentUser && currentUser.role === 'admin') {
+    if (currentUser && isAdmin(currentUser)) {
         if(adminPanels) {
              adminPanels.style.display = 'block';
              adminPanels.classList.remove('hidden');
