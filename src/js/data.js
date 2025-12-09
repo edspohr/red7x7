@@ -29,7 +29,7 @@ export const addAnnouncement = async (text, isPinned = false, author = "Admin") 
         author,
         date: new Date().toISOString()
     });
-    });
+
 };
 
 export const deleteAnnouncement = async (id) => {
