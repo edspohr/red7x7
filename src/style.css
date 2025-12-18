@@ -2,45 +2,54 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer utilities {
+@layer components {
+  .font-heading {
+    font-family: 'Outfit', sans-serif;
+  }
   .section-title {
-    @apply text-xl font-bold mb-6 text-slate-800 flex items-center gap-2;
+    @apply text-2xl font-bold mb-6 text-slate-800 flex items-center gap-2 font-heading tracking-tight;
   }
   .card {
-    @apply bg-white rounded-xl shadow-sm border border-slate-100 p-6 mb-6 transition-all duration-300 hover:shadow-md;
+    @apply bg-white rounded-2xl shadow-sm border border-slate-100 p-6 mb-6 transition-all duration-300 hover:shadow-md hover:border-slate-200;
   }
   .btn {
-    @apply py-2 px-4 rounded-lg font-medium cursor-pointer transition-all duration-200 inline-flex items-center justify-center shadow-sm active:scale-95;
+    @apply py-2.5 px-5 rounded-xl font-medium cursor-pointer transition-all duration-200 inline-flex items-center justify-center shadow-sm active:scale-95 text-sm;
   }
   .btn-primary {
-    @apply bg-gray-600 text-white hover:bg-gray-700;
+    @apply bg-slate-900 text-white hover:bg-slate-800 shadow-slate-200;
   }
   .btn-secondary {
-    @apply bg-gray-200 text-gray-700 hover:bg-gray-300;
+    @apply bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 hover:text-slate-900;
   }
   .btn-google {
-    @apply bg-[#4285F4] text-white hover:bg-[#357ae8];
+    @apply bg-white text-gray-700 border border-gray-200 hover:bg-gray-50;
   }
   .btn-upgrade {
-    @apply bg-amber-500 text-white hover:bg-amber-600;
+    @apply bg-gradient-to-r from-amber-500 to-orange-600 text-white hover:shadow-lg hover:shadow-orange-200 border-0;
   }
   .badge {
-    @apply px-3 py-1 rounded-full text-xs font-medium;
+    @apply px-3 py-1 rounded-full text-xs font-semibold tracking-wide uppercase;
   }
   .badge-socio7x7 {
-    @apply bg-emerald-100 text-emerald-800;
+    @apply bg-slate-100 text-slate-600 border border-slate-200;
   }
   .badge-pro {
-    @apply bg-red-100 text-red-800;
+    @apply bg-indigo-50 text-indigo-700 border border-indigo-100;
   }
   .badge-admin {
-    @apply bg-blue-100 text-blue-800;
+    @apply bg-rose-50 text-rose-700 border border-rose-100;
   }
 }
 
 /* Custom Styles */
 body {
   font-family: "Inter", sans-serif;
+  @apply bg-slate-50 text-slate-600 antialiased;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Outfit', sans-serif;
+  @apply text-slate-900;
 }
 
 #whatsapp-button {
