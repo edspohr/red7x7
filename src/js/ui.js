@@ -1,5 +1,7 @@
 import { createIcons } from "lucide";
-import { deleteUser } from "./data.js";
+import { deleteUser, checkInUser } from "./data.js";
+import QRCode from "qrcode";
+import { Html5QrcodeScanner } from "html5-qrcode";
 
 // --- Helper: Normalize Role Check ---
 const isAdmin = (user) => user?.role?.toLowerCase().trim() === "admin";
@@ -98,7 +100,9 @@ export const showScreen = (screen) => {
   const target = document.getElementById(targetId);
   if (target) {
     target.style.display =
-      targetId === "auth-container" || targetId === "loading-screen"
+      targetId === "auth-container" ||
+      targetId === "loading-screen" ||
+      targetId === "scanner-modal"
         ? "flex"
         : "block";
     target.classList.remove("hidden");
@@ -117,6 +121,18 @@ export const showScreen = (screen) => {
   if (screen === "login") showAuthForm("login");
   if (screen === "register") showAuthForm("register");
   if (screen === "forgot") showAuthForm("forgot");
+
+  // QR Generation for Profile
+  if (screen === "profile") {
+    // We need the currentUser ID here.
+    // Option A: pass currentUser to showScreen (refactor required)
+    // Option B: get from LocalStorage (quick fix)
+    try {
+      const user = JSON.parse(localStorage.getItem("currentUser"));
+      if (user && user.uid) renderQR(user.uid);
+      else if (user && user.id) renderQR(user.id);
+    } catch (e) {}
+  }
 };
 
 // --- Renderers ---
@@ -358,11 +374,23 @@ export const renderMeetings = (
       "bg-white p-6 rounded-2xl shadow-sm border border-slate-100 mb-6 transition-all hover:shadow-md hover:border-indigo-100 group";
 
     // Admin Actions
+    // Admin Actions
     let adminActions = "";
+    const isPresencial = meeting.type === "presencial";
+
     if (isAdminUser) {
       adminActions = `
-            <div class="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                 <button data-id="${meeting.id}" class="edit-meeting-btn p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg">
+            <div class="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity z-10 flex gap-2">
+                 ${
+                   isPresencial
+                     ? `<button onclick="window.red7x7.openScanner((code) => window.red7x7.handleScan(code, '${meeting.id}'))" class="p-2 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-lg" title="Escanear Pasaporte">
+                        <i data-lucide="scan" class="w-4 h-4"></i>
+                     </button>`
+                     : ""
+                 }
+                 <button data-id="${
+                   meeting.id
+                 }" class="edit-meeting-btn p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg">
                     <i data-lucide="edit-2" class="w-4 h-4"></i>
                 </button>
             </div>`;
@@ -444,6 +472,15 @@ export const renderMeetings = (
                 <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
                     <div class="flex-1">
                          <div class="flex items-center gap-2 mb-2">
+                             ${
+                               meeting.type === "presencial"
+                                 ? `<span class="inline-flex items-center rounded-md bg-orange-100 px-2 py-1 text-xs font-medium text-orange-700 ring-1 ring-inset ring-orange-700/10">
+                                     <i data-lucide="map-pin" class="w-3 h-3 mr-1"></i> Presencial
+                                   </span>`
+                                 : `<span class="inline-flex items-center rounded-md bg-sky-100 px-2 py-1 text-xs font-medium text-sky-700 ring-1 ring-inset ring-sky-700/10">
+                                     <i data-lucide="video" class="w-3 h-3 mr-1"></i> Virtual
+                                   </span>`
+                             }
                              <span class="inline-flex items-center rounded-md bg-indigo-50 px-2 py-1 text-xs font-medium text-indigo-700 ring-1 ring-inset ring-indigo-700/10">
                                 <i data-lucide="calendar" class="w-3 h-3 mr-1"></i> ${dDate}
                              </span>
@@ -649,8 +686,34 @@ export const renderDirectory = (
                 </div>
                 
                 ${
+                  user.linkedin
+                    ? `<div class="flex items-center text-slate-700 group-hover:text-slate-900 transition-colors">
+                          <div class="w-8 flex justify-center"><i data-lucide="linkedin" class="w-4 h-4 text-blue-600"></i></div>
+                          <a href="${user.linkedin}" target="_blank" class="truncate text-blue-600 hover:underline">Ver Perfil LinkedIn</a>
+                        </div>`
+                    : ""
+                }
+
+                ${
                   user.description
                     ? `<p class="text-xs text-slate-500 mt-3 pt-3 border-t border-slate-50 italic leading-relaxed">"${user.description}"</p>`
+                    : ""
+                }
+                
+                ${
+                  user.busco || user.ofrezco
+                    ? `<div class="mt-3 pt-3 border-t border-slate-50 space-y-2">
+                        ${
+                          user.busco
+                            ? `<div class="text-xs"><span class="font-bold text-slate-600">Busca:</span> <span class="text-slate-500">${user.busco}</span></div>`
+                            : ""
+                        }
+                        ${
+                          user.ofrezco
+                            ? `<div class="text-xs"><span class="font-bold text-slate-600">Ofrece:</span> <span class="text-slate-500">${user.ofrezco}</span></div>`
+                            : ""
+                        }
+                       </div>`
                     : ""
                 }
             </div>`;
@@ -669,13 +732,15 @@ export const renderDirectory = (
       }
 
       // Initial Avatar/Name Section
-      const initial = user.name.charAt(0).toUpperCase();
+      const avatarHTML = hasPhoto
+        ? `<img src="${user.photoURL}" class="h-12 w-12 rounded-2xl object-cover shadow-md filter hover:brightness-110 transition-all">`
+        : `<div class="h-12 w-12 rounded-2xl bg-gradient-to-br from-indigo-800 to-fuchsia-600 shadow-indigo-200 shadow-md flex items-center justify-center text-white text-lg font-bold shrink-0">
+             ${user.name.charAt(0).toUpperCase()}
+           </div>`;
 
       card.innerHTML = `
                 <div class="flex items-start gap-4 mb-2">
-                    <div class="h-12 w-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 shadow-indigo-200 shadow-md flex items-center justify-center text-white text-lg font-bold shrink-0">
-                        ${initial}
-                    </div>
+                    ${avatarHTML}
                     <div class="min-w-0 flex-1 pt-0.5">
                         <h4 class="font-bold text-lg text-slate-900 font-heading leading-tight truncate pr-16">${
                           user.name
@@ -743,19 +808,19 @@ export const renderDashboardStats = (statsData, currentUser) => {
       title: "Total Usuarios",
       val: statsData.userCount || 0,
       icon: "users",
-      color: "bg-indigo-100 text-indigo-600",
+      color: "bg-indigo-100 text-indigo-800",
     });
     stats.push({
       title: "Anuncios",
       val: statsData.announcementCount || 0,
       icon: "megaphone",
-      color: "bg-blue-100 text-blue-600",
+      color: "bg-fuchsia-100 text-fuchsia-700",
     });
     stats.push({
       title: "Próx. Reuniones",
       val: statsData.upcomingMeetingsCount || 0,
       icon: "calendar",
-      color: "bg-purple-100 text-purple-600",
+      color: "bg-violet-100 text-violet-700",
     });
   } else {
     // User/Pro Stats - Focused on Networking as requested
@@ -763,13 +828,13 @@ export const renderDashboardStats = (statsData, currentUser) => {
       title: "Reuniones Asistidas",
       val: statsData.meetingsAttended || 0,
       icon: "users",
-      color: "bg-indigo-100 text-indigo-600",
+      color: "bg-indigo-100 text-indigo-800",
     });
     stats.push({
       title: "Personas Conocidas",
       val: statsData.peopleMet || 0,
       icon: "user-check",
-      color: "bg-emerald-100 text-emerald-600",
+      color: "bg-emerald-100 text-emerald-700",
     });
 
     if (isPro(currentUser)) {
@@ -779,8 +844,8 @@ export const renderDashboardStats = (statsData, currentUser) => {
         icon: "lock-open",
         color:
           statsData.contactRequestsLeft > 0
-            ? "bg-blue-100 text-blue-600"
-            : "bg-red-100 text-red-600",
+            ? "bg-sky-100 text-sky-700"
+            : "bg-rose-100 text-rose-700",
       });
     }
   }
@@ -864,6 +929,10 @@ export const renderProfileForm = (currentUser) => {
     "profile-company",
     "profile-position",
     "profile-phone",
+    "profile-photo",
+    "profile-linkedin",
+    "profile-busco",
+    "profile-ofrezco",
     "profile-description",
   ];
   const values = [
@@ -872,6 +941,10 @@ export const renderProfileForm = (currentUser) => {
     currentUser.company,
     currentUser.position,
     currentUser.phone,
+    currentUser.photoURL,
+    currentUser.linkedin,
+    currentUser.busco,
+    currentUser.ofrezco,
     currentUser.description,
   ];
 
@@ -891,6 +964,64 @@ export const initializeAppUI = (currentUser) => {
   document.getElementById("whatsapp-button").classList.remove("hidden");
   renderHeader(currentUser);
   // Data independent renders.
-  // Data dependent renders must be called by main.js logic upon data arrival.
   showScreen("app");
+};
+
+// --- QR & Scanner Logic ---
+const renderQR = async (uid) => {
+  const canvas = document.getElementById("qr-code-canvas");
+  if (!canvas) return;
+  try {
+    await QRCode.toCanvas(canvas, uid, {
+      width: 200,
+      margin: 2,
+      color: {
+        dark: "#312E81", // Indigo 900
+        light: "#ffffff",
+      },
+    });
+  } catch (err) {
+    console.error("QR Gen Error:", err);
+  }
+};
+
+let html5QrcodeScanner;
+
+export const openScanner = (onScanSuccess) => {
+  const modal = document.getElementById("scanner-modal");
+  modal.classList.remove("hidden");
+  modal.classList.add("flex"); // Add flex for centering
+
+  // Close Handler
+  const closeBtn = document.getElementById("close-scanner-btn");
+  if (closeBtn) closeBtn.onclick = () => closeScanner();
+
+  if (!html5QrcodeScanner) {
+    html5QrcodeScanner = new Html5QrcodeScanner(
+      "reader",
+      { fps: 10, qrbox: { width: 250, height: 250 } },
+      /* verbose= */ false
+    );
+    html5QrcodeScanner.render(
+      (decodedText) => {
+        onScanSuccess(decodedText);
+        // Don't close immediately, let logic decide
+      },
+      (errorMessage) => {
+        // ignore
+      }
+    );
+  }
+};
+
+export const closeScanner = () => {
+  const modal = document.getElementById("scanner-modal");
+  modal.classList.add("hidden");
+  modal.classList.remove("flex");
+
+  if (html5QrcodeScanner) {
+    html5QrcodeScanner.clear().catch((e) => console.error(e));
+    // We don't nullify to reuse? Actually clearer to nullify/re-init often safer for cameras
+    // html5QrcodeScanner = null;
+  }
 };

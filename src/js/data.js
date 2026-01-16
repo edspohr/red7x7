@@ -12,6 +12,9 @@ import {
   setDoc,
   deleteDoc,
   where,
+  arrayUnion,
+  increment,
+  writeBatch,
 } from "firebase/firestore";
 
 // --- Announcements ---
@@ -203,4 +206,66 @@ export const unlockContact = async (userId, targetId) => {
     expiresAt: expires.toISOString(),
     targetId: targetId,
   });
+};
+
+// --- Check-in & Unlock Logic (The "Match" Engine) ---
+export const checkInUser = async (meetingId, userId) => {
+  try {
+    const meetingRef = doc(db, "meetings", meetingId);
+    const meetingSnap = await getDoc(meetingRef);
+
+    if (!meetingSnap.exists()) throw new Error("Reunión no encontrada");
+
+    const meetingData = meetingSnap.data();
+    const currentParticipants = meetingData.participants || [];
+
+    if (currentParticipants.includes(userId)) {
+      return {
+        success: false,
+        message: "Usuario ya registrado en esta reunión.",
+      };
+    }
+
+    // A. Update Meeting (Add Participant)
+    await updateDoc(meetingRef, {
+      participants: arrayUnion(userId),
+    });
+
+    // B. Update User Stats (Meetings Count)
+    const userRef = doc(db, "users", userId);
+    await updateDoc(userRef, {
+      meetingsAttended: increment(1),
+    });
+
+    // C. Unlock Contacts (Mutual)
+    // For every EXISTING participant, add NEW user to their 'peopleMet'
+    // And add ALL existing participants to NEW user's 'peopleMet'
+
+    if (currentParticipants.length > 0) {
+      const batch = writeBatch(db);
+
+      // 1. Add everyone to New User's peopleMet
+      batch.update(userRef, {
+        peopleMet: arrayUnion(...currentParticipants),
+      });
+
+      // 2. Add New User to everyone else's peopleMet
+      currentParticipants.forEach((pId) => {
+        const pRef = doc(db, "users", pId);
+        batch.update(pRef, {
+          peopleMet: arrayUnion(userId),
+        });
+      });
+
+      await batch.commit();
+    }
+
+    return {
+      success: true,
+      message: "Check-in exitoso. Contactos desbloqueados.",
+    };
+  } catch (e) {
+    console.error("Check-in Error:", e);
+    return { success: false, message: e.message };
+  }
 };

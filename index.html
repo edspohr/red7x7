@@ -462,12 +462,18 @@
               />
             </div>
             <input id="meeting-id" type="hidden" />
-            <input
-              id="meeting-location"
-              type="text"
-              placeholder="Lugar / Enlace (Zoom, Meet, etc.)"
-              class="w-full p-2 border rounded-md mt-4"
-            />
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+              <input
+                id="meeting-location"
+                type="text"
+                placeholder="Lugar / Enlace (Zoom, Meet, etc.)"
+                class="w-full p-2 border rounded-md md:col-span-2"
+              />
+              <select id="meeting-type" class="w-full p-2 border rounded-md bg-white">
+                  <option value="virtual">Virtual</option>
+                  <option value="presencial">Presencial</option>
+              </select>
+            </div>
             <textarea
               id="meeting-summary"
               class="w-full p-2 border rounded-md mt-4"
@@ -531,8 +537,20 @@
     <!-- Profile Screen -->
     <div id="profile-screen" class="min-h-screen">
       <div class="max-w-2xl mx-auto p-4 sm:p-6 lg:p-8">
+        
+        <!-- QR Passport -->
+        <div class="card bg-gradient-to-br from-indigo-900 to-indigo-700 text-white p-8 flex flex-col items-center shadow-indigo-500/30 border-none">
+           <h2 class="text-2xl font-bold mb-6 font-heading tracking-tight text-white flex items-center gap-2">
+              <i data-lucide="qr-code" class="w-6 h-6"></i> Pasaporte Digital
+           </h2>
+           <div class="bg-white p-4 rounded-2xl shadow-2xl">
+              <canvas id="qr-code-canvas" class="w-48 h-48"></canvas>
+           </div>
+           <p class="text-sm text-indigo-100 mt-4 font-medium opacity-80">Presenta este código para hacer Check-in</p>
+        </div>
+
         <div class="card">
-          <h2 class="section-title">Mi Perfil</h2>
+          <h2 class="section-title">Editar Perfil</h2>
           <p class="text-sm text-gray-500 mb-6">
             Completa y actualiza tus datos para que la comunidad pueda conocerte
             mejor.
@@ -600,6 +618,22 @@
                 class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-gray-500 focus:border-gray-500"
               />
             </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Foto de Perfil (URL)</label>
+              <input type="url" id="profile-photo" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-gray-500 focus:border-gray-500" placeholder="https://..." />
+            </div>
+             <div>
+              <label class="block text-sm font-medium text-gray-700">LinkedIn (URL)</label>
+              <input type="url" id="profile-linkedin" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-gray-500 focus:border-gray-500" placeholder="https://linkedin.com/in/..." />
+            </div>
+            <div>
+                 <label class="block text-sm font-medium text-gray-700">Busco (Tags separados por coma)</label>
+                 <input type="text" id="profile-busco" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-gray-500 focus:border-gray-500" placeholder="Ej: Inversionistas, Clientes SaaS, Contadores" />
+             </div>
+              <div>
+                 <label class="block text-sm font-medium text-gray-700">Ofrezco (Tags separados por coma)</label>
+                 <input type="text" id="profile-ofrezco" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-gray-500 focus:border-gray-500" placeholder="Ej: Consultoría Legal, Hosting, Mentoría" />
+             </div>
             <div>
               <label
                 for="profile-description"
@@ -711,6 +745,18 @@
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- QR Scanner Modal -->
+    <div id="scanner-modal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-90 z-50 flex-col items-center justify-center p-4">
+        <div class="bg-white rounded-2xl p-6 w-full max-w-md relative shadow-2xl">
+            <button id="close-scanner-btn" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+            <h3 class="text-xl font-bold text-center mb-4 text-slate-800">Escáner de Asistencia</h3>
+            <div id="reader" class="w-full bg-black rounded-lg overflow-hidden h-64"></div>
+            <p id="scanner-result" class="text-center mt-4 text-sm font-medium text-slate-600">Apunta la cámara al código QR...</p>
+        </div>
     </div>
 
     <!-- WhatsApp Floating Button -->

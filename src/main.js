@@ -18,6 +18,7 @@ import {
   checkAndResetProQuota,
   getUnlockedContacts,
   unlockContact,
+  checkInUser,
   uploadUsersFromCSV,
 } from "./js/data.js";
 import Papa from "papaparse";
@@ -42,7 +43,9 @@ import {
   renderDirectory,
   renderProfileForm,
   renderHeader,
+  openScanner,
 } from "./js/ui.js";
+import { sounds } from "./js/sound.js";
 import { handleProcessMeetingAI } from "./js/ai.js";
 
 // --- Routing ---
@@ -296,6 +299,10 @@ document.addEventListener("DOMContentLoaded", () => {
         company: document.getElementById("profile-company").value,
         position: document.getElementById("profile-position").value,
         phone: document.getElementById("profile-phone").value,
+        photoURL: document.getElementById("profile-photo").value,
+        linkedin: document.getElementById("profile-linkedin").value,
+        busco: document.getElementById("profile-busco").value,
+        ofrezco: document.getElementById("profile-ofrezco").value,
         description: document.getElementById("profile-description").value,
       };
       await updateCurrentUser(updates);
@@ -352,6 +359,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const date = document.getElementById("meeting-date").value;
       const time = document.getElementById("meeting-time").value;
       const location = document.getElementById("meeting-location").value;
+      const type = document.getElementById("meeting-type").value;
       const summary = document.getElementById("meeting-summary").value;
 
       if (!title || !date)
@@ -369,6 +377,7 @@ document.addEventListener("DOMContentLoaded", () => {
             date,
             time,
             location,
+            type,
             summary,
             participants: selected,
           });
@@ -379,6 +388,7 @@ document.addEventListener("DOMContentLoaded", () => {
             date,
             time,
             location,
+            type,
             summary,
             participants: selected,
             createdAt: new Date().toISOString(),
@@ -392,6 +402,7 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("meeting-date").value = "";
         document.getElementById("meeting-time").value = "";
         document.getElementById("meeting-location").value = "";
+        document.getElementById("meeting-type").value = "virtual";
         document.getElementById("meeting-summary").value = "";
         document
           .querySelectorAll(".participant-checkbox")
@@ -422,9 +433,9 @@ document.addEventListener("DOMContentLoaded", () => {
           document.getElementById("meeting-date").value = meeting.date;
           if (meeting.time)
             document.getElementById("meeting-time").value = meeting.time;
-          if (meeting.location)
-            document.getElementById("meeting-location").value =
-              meeting.location;
+          document.getElementById("meeting-location").value = meeting.location;
+          if (meeting.type)
+            document.getElementById("meeting-type").value = meeting.type;
           if (meeting.summary)
             document.getElementById("meeting-summary").value = meeting.summary;
 
@@ -566,10 +577,12 @@ document.addEventListener("DOMContentLoaded", () => {
         ) {
           try {
             await unlockContact(state.currentUser.id, targetUid);
+            sounds.playUnlock();
             showToast("Contacto desbloqueado", "success");
             refreshUI(); // Refresh to update view and quota
           } catch (err) {
             console.error(err);
+            sounds.playError();
             showToast(err.message, "error");
           }
         }
@@ -680,4 +693,28 @@ const showEditModal = (meetingId) => {
   document.getElementById("edit-meeting-summary").value = meeting.summary || "";
 
   document.getElementById("edit-meeting-modal").classList.remove("hidden");
+};
+
+// --- Global Handlers (for Inline OnClick) ---
+window.red7x7 = {
+  openScanner: (callback) => openScanner(callback),
+  handleScan: async (decodedText, meetingId) => {
+    // decodedText should be the User UID
+    try {
+      console.log("Scanned:", decodedText, "for Meeting:", meetingId);
+      const result = await checkInUser(meetingId, decodedText);
+
+      if (result.success) {
+        sounds.playSuccess();
+        showToast(result.message, "success");
+      } else {
+        sounds.playError();
+        showToast(result.message, "warning");
+      }
+    } catch (e) {
+      console.error(e);
+      sounds.playError();
+      showToast("Error al procesar QR", "error");
+    }
+  },
 };

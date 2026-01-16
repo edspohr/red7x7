@@ -5,10 +5,13 @@
 @layer base {
   body {
     font-family: 'Inter', sans-serif;
-    @apply bg-slate-50 text-slate-600 antialiased selection:bg-indigo-500 selection:text-white;
+    @apply bg-slate-50 text-slate-700 antialiased selection:bg-fuchsia-500 selection:text-white;
+    background-color: #f8fafc;
     background-image: 
-      radial-gradient(circle at 0% 0%, rgba(99, 102, 241, 0.05) 0%, transparent 50%),
-      radial-gradient(circle at 100% 100%, rgba(139, 92, 246, 0.05) 0%, transparent 50%);
+      radial-gradient(at 0% 0%, rgba(49, 46, 129, 0.08) 0px, transparent 50%),
+      radial-gradient(at 100% 0%, rgba(217, 70, 239, 0.08) 0px, transparent 50%),
+      radial-gradient(at 100% 100%, rgba(49, 46, 129, 0.08) 0px, transparent 50%),
+      radial-gradient(at 0% 100%, rgba(217, 70, 239, 0.08) 0px, transparent 50%);
     background-attachment: fixed;
   }
   
@@ -25,7 +28,7 @@
   }
   .section-title::after {
     content: '';
-    @apply h-1 w-12 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full mt-1 absolute -bottom-2 left-0;
+    @apply h-1 w-12 bg-gradient-to-r from-indigo-800 to-fuchsia-600 rounded-full mt-1 absolute -bottom-2 left-0;
   }
 
   /* Premium Cards (Deep Glass) */
@@ -38,13 +41,13 @@
     @apply py-2.5 px-6 rounded-xl font-medium cursor-pointer transition-all duration-300 inline-flex items-center justify-center shadow-lg active:scale-95 text-sm tracking-wide;
   }
   .btn-primary {
-    @apply bg-gradient-to-r from-slate-900 to-slate-800 text-white hover:to-slate-700 shadow-slate-500/30 hover:shadow-slate-500/50 border border-transparent;
+    @apply bg-gradient-to-r from-indigo-900 to-indigo-800 text-white hover:to-indigo-700 shadow-lg shadow-indigo-900/20 hover:shadow-indigo-900/40 border-0;
   }
   .btn-secondary {
     @apply bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 hover:text-slate-900 hover:border-slate-300 shadow-slate-200/50;
   }
   .btn-action {
-    @apply bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-100;
+    @apply bg-fuchsia-50 text-fuchsia-700 hover:bg-fuchsia-100 border border-fuchsia-100;
   }
   
   /* Specialized Buttons */
@@ -106,7 +109,7 @@
 
 /* Custom UI Components */
 #whatsapp-button {
-  @apply fixed bottom-8 right-8 w-14 h-14 rounded-full shadow-2xl transition-transform duration-300 z-50 hover:scale-110 active:scale-90;
+  @apply fixed bottom-8 right-8 w-14 h-14 rounded-full shadow-2xl transition-transform duration-300 z-50 hover:scale-110 active:scale-90 bg-white;
   box-shadow: 0 10px 25px -5px rgba(37, 211, 102, 0.5);
 }
 #whatsapp-button img {
@@ -121,7 +124,7 @@
 }
 
 #auth-container {
-  background: linear-gradient(-45deg, #eff6ff, #f5f3ff, #eef2ff, #f8fafc);
+  background: linear-gradient(-45deg, #e0e7ff, #f3e8ff, #fae8ff, #f8fafc);
   background-size: 300% 300%;
   animation: gradient-move 15s ease infinite;
 }
@@ -145,3 +148,43 @@
   display: none;
 }
 
+/* --- Midnight Mode (Dark) --- */
+body.dark {
+    background-color: #0f172a; /* Slate 900 */
+    background-image: 
+        radial-gradient(at 0% 0%, #1e1b4b 0, transparent 50%), /* Indigo 950 */
+        radial-gradient(at 50% 100%, #312e81 0, transparent 50%), /* Indigo 900 */
+        radial-gradient(at 100% 0%, #4a044e 0, transparent 50%); /* Fuchsia 950 */
+    color: #e2e8f0; /* Slate 200 */
+}
+
+body.dark .text-slate-900 { color: #f1f5f9; }
+body.dark .text-gray-900 { color: #f3f4f6; }
+body.dark .text-slate-500, body.dark .text-gray-600, body.dark .text-gray-500 { color: #94a3b8; }
+body.dark .border-slate-100, body.dark .border-gray-200 { border-color: rgba(255,255,255,0.1); }
+body.dark .bg-white { background-color: rgba(30, 41, 59, 0.7); } /* Slate 800 glass */
+body.dark .bg-gray-50, body.dark .bg-slate-50 { background-color: rgba(15, 23, 42, 0.5); }
+body.dark .hover\:bg-gray-50:hover { background-color: rgba(255,255,255,0.05); }
+
+/* Dark Mode Card Overrides */
+body.dark .card {
+    background: rgba(30, 41, 59, 0.6); /* Slate 800 with opacity */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.15);
+}
+
+body.dark input, body.dark select, body.dark textarea {
+    background-color: rgba(15, 23, 42, 0.8);
+    border-color: rgba(255,255,255,0.2);
+    color: white;
+}
+body.dark input::placeholder, body.dark textarea::placeholder {
+    color: #64748b;
+}
+
+body.dark .section-title {
+    color: #e2e8f0;
+}
+body.dark .section-title::after {
+    background: linear-gradient(90deg, #818cf8, #e879f9); /* Lighter gradients */
+}
