@@ -10,8 +10,6 @@ import {
   updateDoc,
   getDoc,
   setDoc,
-  getDoc,
-  setDoc,
   deleteDoc,
   where,
 } from "firebase/firestore";
