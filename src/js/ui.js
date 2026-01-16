@@ -186,6 +186,32 @@ export const renderHeader = (currentUser) => {
     }
   }
 
+  // Dark Mode Toggle Logic
+  const themeToggle = document.getElementById("theme-toggle");
+  if (themeToggle) {
+    // Set initial state
+    const isDark =
+      document.body.classList.contains("dark") ||
+      localStorage.getItem("theme") === "dark";
+    if (isDark) document.body.classList.add("dark");
+
+    const updateIcon = (dark) => {
+      themeToggle.innerHTML = dark
+        ? '<i data-lucide="sun" class="w-5 h-5 text-yellow-400"></i>'
+        : '<i data-lucide="moon" class="w-5 h-5"></i>';
+    };
+    updateIcon(isDark);
+
+    themeToggle.onclick = () => {
+      document.body.classList.toggle("dark");
+      const newIsDark = document.body.classList.contains("dark");
+      localStorage.setItem("theme", newIsDark ? "dark" : "light");
+      updateIcon(newIsDark);
+      if (window.lucide)
+        window.lucide.createIcons({ icons: window.lucide.icons });
+    };
+  }
+
   // Refresh icons in header if they were just rendered/hidden
   if (window.lucide) window.lucide.createIcons({ icons: window.lucide.icons });
 };
@@ -885,6 +911,11 @@ export const renderAdminPanels = (currentUser, users = {}) => {
     const today = new Date().toISOString().split("T")[0];
     const dateInput = document.getElementById("meeting-date");
     if (dateInput) dateInput.value = today;
+
+    // Populate Admin User Table
+    populateAdminUserTable(users);
+
+    // Render checkboxes with USERS
 
     // Render checkboxes with USERS
     const participantsList = document.getElementById(

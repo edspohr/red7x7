@@ -257,6 +257,10 @@
                 <p id="user-email-role" class="text-xs text-slate-500 mt-1"></p>
               </div>
               
+              <button id="theme-toggle" class="p-2 rounded-full text-slate-500 hover:bg-slate-100 transition-colors mr-1" title="Cambiar Tema">
+                 <i data-lucide="moon" class="w-5 h-5"></i>
+              </button>
+
               <a href="https://www.red7x7.cl/suscripcion" target="_blank" id="upgrade-to-pro-btn" class="btn btn-upgrade hidden text-xs px-3 py-1.5 rounded-full">
                 <i data-lucide="sparkles" class="w-3.5 h-3.5 md:mr-1.5"></i>
                 <span class="hidden md:inline">Hazte Pro</span>
@@ -380,6 +384,32 @@
                 Usuario
               </button>
             </form>
+          </div>
+        </div>
+
+          <!-- Admin User Management Table -->
+          <div class="card overflow-hidden mt-6">
+            <div class="flex justify-between items-center mb-4">
+                 <h2 class="section-title mb-0">🛠️ Gestión de Usuarios</h2>
+                 <div class="text-sm text-gray-500 font-medium">
+                     <span id="admin-user-count">0</span> Usuarios
+                 </div>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full text-sm text-left">
+                    <thead class="bg-gray-50 text-gray-600 font-medium border-b border-gray-100">
+                        <tr>
+                            <th class="py-3 px-4">Usuario</th>
+                            <th class="py-3 px-4">Rol</th>
+                            <th class="py-3 px-4">Empresa / Cargo</th>
+                            <th class="py-3 px-4 text-right">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-users-table-body" class="divide-y divide-gray-100 dark:divide-slate-700">
+                        <!-- Rows injected by JS -->
+                    </tbody>
+                </table>
+            </div>
           </div>
         </div>
 

@@ -19,6 +19,7 @@ import {
   getUnlockedContacts,
   unlockContact,
   checkInUser,
+  deleteUser,
   uploadUsersFromCSV,
 } from "./js/data.js";
 import Papa from "papaparse";
@@ -617,6 +618,53 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
     });
+
+  // --- Admin User Table Listeners (New) ---
+  const adminTableBody = document.getElementById("admin-users-table-body");
+  if (adminTableBody) {
+    // Role Change
+    adminTableBody.addEventListener("change", async (e) => {
+      if (e.target.classList.contains("admin-table-role-select")) {
+        const uid = e.target.getAttribute("data-uid");
+        const newRole = e.target.value;
+        if (confirm(`¿Cambiar rol a ${newRole}?`)) {
+          try {
+            await updateUserRole(uid, newRole);
+            showToast("Rol actualizado", "success");
+            // Optimistic Update handled by data subscription if active, or we can manual update state
+            if (state.users[uid]) state.users[uid].role = newRole;
+          } catch (err) {
+            console.error(err);
+            showToast(err.message, "error");
+            // Revert? e.target.value = old;
+          }
+        }
+      }
+    });
+
+    // Delete User
+    adminTableBody.addEventListener("click", async (e) => {
+      const btn = e.target.closest(".admin-table-delete-btn");
+      if (btn) {
+        const uid = btn.getAttribute("data-uid");
+        const name = btn.getAttribute("data-name"); // Might not be on button if innerHTML used
+
+        if (
+          confirm(
+            `⚠️ PELIGRO:\n¿Estás seguro de ELIMINAR al usuario?\nEsta acción es irreversible.`
+          )
+        ) {
+          try {
+            await deleteUser(uid);
+            showToast("Usuario eliminado", "success");
+          } catch (err) {
+            console.error(err);
+            showToast(err.message, "error");
+          }
+        }
+      }
+    });
+  }
 
   // Modal Close
   document
