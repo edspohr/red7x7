@@ -45,6 +45,29 @@ import {
 } from "./js/ui.js";
 import { handleProcessMeetingAI } from "./js/ai.js";
 
+// --- Routing ---
+const handleRouting = () => {
+  const hash = window.location.hash.substring(1) || "login";
+  // Map hash to screen names used in showScreen
+  // #app -> app, #profile -> profile, #login -> login, etc.
+
+  // Guard: If trying to access app/profile without user, force login
+  if ((hash === "app" || hash === "profile") && !state.currentUser) {
+    window.location.hash = "login";
+    return;
+  }
+
+  // Guard: If at login/register but logged in, go to app
+  if ((hash === "login" || hash === "register") && state.currentUser) {
+    window.location.hash = "app";
+    return;
+  }
+
+  showScreen(hash);
+};
+
+window.addEventListener("hashchange", handleRouting);
+
 // --- State Management ---
 let state = {
   currentUser: null,
@@ -86,7 +109,18 @@ setTimeout(() => {
 // auth.js handles the initial auth check and calls this:
 setOnLoginSuccess(async (user) => {
   state.currentUser = user;
-  initializeAppUI(user);
+
+  // Initialize UI Elements that were in initializeAppUI
+  const waBtn = document.getElementById("whatsapp-button");
+  if (waBtn) waBtn.classList.remove("hidden");
+  renderHeader(user);
+
+  // Route to App if current hash is login or empty
+  if (!window.location.hash || window.location.hash === "#login") {
+    window.location.hash = "app";
+  } else {
+    handleRouting(); // Reload current view with data
+  }
 
   // 1. Fetch Directory (One-time fetch for now, or could be subscription)
   try {
@@ -118,7 +152,9 @@ setOnLoginSuccess(async (user) => {
 });
 
 setOnLogout(() => {
-  showScreen("login");
+  window.location.hash = "login";
+  const waBtn = document.getElementById("whatsapp-button");
+  if (waBtn) waBtn.classList.add("hidden");
 });
 
 const refreshUI = async () => {
@@ -222,34 +258,34 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.getElementById("register-link").addEventListener("click", (e) => {
     e.preventDefault();
-    showScreen("register");
+    window.location.hash = "register";
   });
   document
     .getElementById("login-link-from-register")
     .addEventListener("click", (e) => {
       e.preventDefault();
-      showScreen("login");
+      window.location.hash = "login";
     });
   document
     .getElementById("login-link-from-forgot")
     .addEventListener("click", (e) => {
       e.preventDefault();
-      showScreen("login");
+      window.location.hash = "login";
     });
   document
     .getElementById("forgot-password-link")
     .addEventListener("click", (e) => {
       e.preventDefault();
-      showScreen("forgot");
+      window.location.hash = "forgot";
     });
 
   document.getElementById("profile-button").addEventListener("click", () => {
-    showScreen("profile");
+    window.location.hash = "profile";
     renderProfileForm(state.currentUser);
   });
-  document
-    .getElementById("cancel-profile")
-    .addEventListener("click", () => showScreen("app"));
+  document.getElementById("cancel-profile").addEventListener("click", () => {
+    window.location.hash = "app";
+  });
 
   // Profile Save
   document

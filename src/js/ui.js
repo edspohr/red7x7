@@ -1,4 +1,5 @@
 import { createIcons } from "lucide";
+import { deleteUser } from "./data.js";
 
 // --- Helper: Normalize Role Check ---
 const isAdmin = (user) => user?.role?.toLowerCase().trim() === "admin";
@@ -66,51 +67,51 @@ export const showAuthForm = (form) => {
 };
 
 export const showScreen = (screen) => {
-  // console.log("Showing screen:", screen); // Debugging
-  const loading = document.getElementById("loading-screen");
-  const auth = document.getElementById("auth-container");
-  const app = document.getElementById("app-screen");
-  const profile = document.getElementById("profile-screen");
+  const screens = [
+    "loading-screen",
+    "auth-container",
+    "app-screen",
+    "profile-screen",
+  ];
 
-  // Reset all to hidden/none first
-  if (loading) loading.style.display = "none";
-
-  // Auth Container handling
-  if (auth) {
-    if (["login", "register", "forgot"].includes(screen)) {
-      auth.style.display = "flex";
-      auth.classList.remove("hidden");
-    } else {
-      auth.style.display = "none";
-      auth.classList.add("hidden");
+  // Hide all screens first with exit animation
+  screens.forEach((id) => {
+    const el = document.getElementById(id);
+    if (el && !el.classList.contains("hidden")) {
+      // Verify if it's the one we are showing, if so, skip (or optimize)
+      // For simplicity: Hide instantly or fade out?
+      // Let's do simple: Hide all, then Fade In the target.
+      el.style.display = "none";
+      el.classList.add("hidden");
+      el.classList.remove("screen-enter");
     }
-  }
+  });
 
-  // App handling
-  if (app) {
-    if (screen === "app") {
-      app.style.display = "block";
-      app.classList.remove("hidden");
-    } else {
-      app.style.display = "none";
-      app.classList.add("hidden");
-    }
-  }
+  // Identify Target
+  let targetId = "";
+  if (screen === "loading") targetId = "loading-screen";
+  else if (["login", "register", "forgot"].includes(screen))
+    targetId = "auth-container";
+  else if (screen === "app") targetId = "app-screen";
+  else if (screen === "profile") targetId = "profile-screen";
 
-  // Profile handling
-  if (profile) {
-    if (screen === "profile") {
-      profile.style.display = "block";
-      profile.classList.remove("hidden");
-    } else {
-      profile.style.display = "none";
-      profile.classList.add("hidden");
-    }
-  }
+  const target = document.getElementById(targetId);
+  if (target) {
+    target.style.display =
+      targetId === "auth-container" || targetId === "loading-screen"
+        ? "flex"
+        : "block";
+    target.classList.remove("hidden");
+    target.classList.add("screen-enter");
 
-  // Loading handling
-  if (screen === "loading" && loading) {
-    loading.style.display = "flex";
+    // Cleanup animation class
+    target.addEventListener(
+      "animationend",
+      () => {
+        target.classList.remove("screen-enter");
+      },
+      { once: true }
+    );
   }
 
   if (screen === "login") showAuthForm("login");
@@ -183,7 +184,14 @@ export const renderAnnouncements = (announcements, currentUser) => {
   );
 
   if (sorted.length === 0) {
-    list.innerHTML = `<div class="text-center text-gray-400 py-8 italic">No hay anuncios publicados.</div>`;
+    list.innerHTML = `
+        <div class="flex flex-col items-center justify-center py-12 text-center">
+            <div class="bg-indigo-50 p-4 rounded-full mb-3">
+                <i data-lucide="bell-off" class="w-8 h-8 text-indigo-300"></i>
+            </div>
+            <p class="text-slate-500 font-medium">No hay anuncios publicados por el momento.</p>
+        </div>`;
+    if (window.lucide) refreshIcons();
     return;
   }
 
@@ -318,9 +326,21 @@ export const renderMeetings = (
   });
 
   if (sorted.length === 0) {
-    list.innerHTML = `<div class="text-center text-gray-400 py-8 italic">No hay reuniones ${
-      activeTab === "upcoming" ? "próximas" : "pasadas"
-    }.</div>`;
+    list.innerHTML = `
+        <div class="flex flex-col items-center justify-center py-12 text-center">
+            <div class="bg-indigo-50 p-4 rounded-full mb-3">
+                <i data-lucide="calendar-off" class="w-8 h-8 text-indigo-300"></i>
+            </div>
+            <p class="text-slate-500 font-medium">No hay reuniones ${
+              activeTab === "upcoming" ? "programadas" : "pasadas"
+            }.</p>
+            ${
+              activeTab === "upcoming"
+                ? '<p class="text-xs text-slate-400 mt-1">¡Mantente atento a nuevas convocatorias!</p>'
+                : ""
+            }
+        </div>`;
+    if (window.lucide) refreshIcons();
     return;
   }
 
@@ -541,9 +561,16 @@ export const renderDirectory = (
   if (matchCount === 0) {
     const emptyData = document.createElement("div");
     emptyData.className =
-      "text-center text-gray-400 py-12 italic col-span-full bg-slate-50 rounded-2xl border border-slate-100";
-    emptyData.innerText = "No hay usuarios en el directorio.";
+      "col-span-full flex flex-col items-center justify-center py-12 text-center bg-white/50 border border-dashed border-slate-300 rounded-2xl";
+    emptyData.innerHTML = `
+        <div class="bg-slate-50 p-4 rounded-full mb-3">
+            <i data-lucide="search-x" class="w-8 h-8 text-slate-400"></i>
+        </div>
+        <p class="text-slate-500 font-medium">No se encontraron miembros.</p>
+        <p class="text-xs text-slate-400 mt-1">Intenta con otro término de búsqueda.</p>
+    `;
     list.appendChild(emptyData);
+    if (window.lucide) refreshIcons();
     return;
   }
 
@@ -572,7 +599,7 @@ export const renderDirectory = (
       const isAdminUser = isAdmin(currentUser);
       const isSelf = user.id === currentUser.id;
       const hasMet = peopleMetSet.has(user.id);
-      const canViewDetails = isAdminUser || isSelf || hasMet;
+      // const canViewDetails = isAdminUser || isSelf || hasMet; // Removed to avoid duplication
 
       const roleBadges = {
         socio7x7: '<span class="badge badge-socio7x7">Socio7x7</span>',
@@ -588,6 +615,15 @@ export const renderDirectory = (
 
       // Contact Details Logic
       let contactDetailsHTML = "";
+
+      // STRICT PRIVACY RULES
+      // 1. Admin: Sees everything
+      // 2. Self: Sees own data
+      // 3. Pro: Sees check "unlockedContacts" logic (hasMet)
+      // 4. Socio7x7: Sees names/company but NO contact info unless it's their own
+
+      const canViewDetails =
+        isAdminUser || isSelf || (isPro(currentUser) && hasMet);
 
       if (canViewDetails) {
         contactDetailsHTML = `
@@ -620,11 +656,14 @@ export const renderDirectory = (
             </div>`;
       } else {
         // Locked State
+        let lockedMessage = "Hazte Pro para ver datos";
+        if (isSocio(currentUser)) lockedMessage = "Plan Socio: Vista limitada";
+
         contactDetailsHTML = `
             <div class="mt-auto pt-8 pb-2 text-center">
                  <div class="inline-flex flex-col items-center justify-center p-4 rounded-xl bg-slate-50 border border-slate-100 w-full group-hover:bg-slate-100/50 transition-colors">
                     <i data-lucide="lock" class="w-5 h-5 text-slate-300 mb-2"></i>
-                    <p class="text-xs text-slate-400 font-medium">Asiste a una reunión para conectar</p>
+                    <p class="text-xs text-slate-400 font-medium">${lockedMessage}</p>
                  </div>
             </div>`;
       }
@@ -656,7 +695,7 @@ export const renderDirectory = (
                 ${
                   isAdminUser
                     ? `
-                <div class="mt-4 pt-3 border-t border-slate-100 opacity-40 group-hover:opacity-100 transition-opacity">
+                <div class="mt-4 pt-3 border-t border-slate-100 opacity-40 group-hover:opacity-100 transition-opacity flex items-center gap-2">
                     <select class="role-selector block w-full py-1 px-2 text-[10px] uppercase font-bold border border-slate-200 rounded-lg bg-slate-50 focus:ring-0 focus:border-indigo-300 cursor-pointer" data-uid="${
                       user.id
                     }">
@@ -673,6 +712,11 @@ export const renderDirectory = (
                           user.role === "disabled" ? "selected" : ""
                         }>Rol: Desactivado</option>
                     </select>
+                    <button class="delete-user-btn p-1.5 text-red-300 hover:text-red-600 hover:bg-red-50 rounded transition-colors" data-uid="${
+                      user.id
+                    }" title="Eliminar Usuario">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                    </button>
                 </div>`
                     : ""
                 }`;

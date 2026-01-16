@@ -10,7 +10,10 @@ import {
   updateDoc,
   getDoc,
   setDoc,
+  getDoc,
+  setDoc,
   deleteDoc,
+  where,
 } from "firebase/firestore";
 
 // --- Announcements ---
@@ -48,23 +51,26 @@ export const togglePinAnnouncement = async (id, currentStatus) => {
 
 // --- Users (Admin Manual Add) ---
 export const addUserProfile = async (userData) => {
-  // We use setDoc with a custom ID or addDoc?
-  // If we want them to claim it via Auth later, email is the key, but Auth UIDs are random.
-  // Strategy: Create a doc with an auto-ID. When they register, Auth creates a NEW UID.
-  // Problem: Syncing.
-  // Alternative: Just use addDoc. When they register, logic in auth.js checks for existing doc?
-  // No, auth.js checks `doc(db, "users", user.uid)`.
-  // We cannot predict `user.uid`.
-  // So "Manual Add" creates a "Ghost" user. Merging is hard.
-  // Compromise: Admin creates a "Ghost" user that shows in directory.
-  // If that user eventually signs up, they get a NEW profile. Admin has to delete the ghost.
-  // Unless we use Email as ID? No, Firestore Users collection is keyed by UID.
-  // Let's just use addDoc for now to populate the directory as requested.
+  // Check for duplicate by email first
+  const q = query(
+    collection(db, "users"),
+    where("email", "==", userData.email)
+  );
+  const snap = await getDocs(q);
+
+  if (!snap.empty) {
+    throw new Error("El usuario ya existe con ese email.");
+  }
+
   await addDoc(collection(db, "users"), {
     ...userData,
     role: "socio7x7",
     createdAt: new Date().toISOString(),
   });
+};
+
+export const deleteUser = async (uid) => {
+  await deleteDoc(doc(db, "users", uid));
 };
 
 export const uploadUsersFromCSV = async (usersList) => {

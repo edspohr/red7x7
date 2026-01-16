@@ -2,141 +2,146 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer components {
-  .font-heading {
+@layer base {
+  body {
+    font-family: 'Inter', sans-serif;
+    @apply bg-slate-50 text-slate-600 antialiased selection:bg-indigo-500 selection:text-white;
+    background-image: 
+      radial-gradient(circle at 0% 0%, rgba(99, 102, 241, 0.05) 0%, transparent 50%),
+      radial-gradient(circle at 100% 100%, rgba(139, 92, 246, 0.05) 0%, transparent 50%);
+    background-attachment: fixed;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
     font-family: 'Outfit', sans-serif;
+    @apply text-slate-900 tracking-tight;
   }
+}
+
+@layer components {
+  /* Headings */
   .section-title {
-    @apply text-2xl font-bold mb-6 text-slate-800 flex items-center gap-2 font-heading tracking-tight;
+    @apply text-2xl font-bold mb-6 text-slate-900 flex items-center gap-3 relative;
   }
+  .section-title::after {
+    content: '';
+    @apply h-1 w-12 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full mt-1 absolute -bottom-2 left-0;
+  }
+
+  /* Premium Cards (Deep Glass) */
   .card {
-    @apply bg-white rounded-2xl shadow-sm border border-slate-100 p-6 mb-6 transition-all duration-300 hover:shadow-md hover:border-slate-200;
+    @apply bg-white/70 backdrop-blur-xl rounded-2xl p-6 mb-6 transition-all duration-300 border border-white/50 shadow-lg shadow-slate-200/50 hover:shadow-xl hover:shadow-indigo-500/10 hover:border-indigo-500/20 hover:-translate-y-1;
   }
+
+  /* Buttons */
   .btn {
-    @apply py-2.5 px-5 rounded-xl font-medium cursor-pointer transition-all duration-200 inline-flex items-center justify-center shadow-sm active:scale-95 text-sm;
+    @apply py-2.5 px-6 rounded-xl font-medium cursor-pointer transition-all duration-300 inline-flex items-center justify-center shadow-lg active:scale-95 text-sm tracking-wide;
   }
   .btn-primary {
-    @apply bg-slate-900 text-white hover:bg-slate-800 shadow-slate-200;
+    @apply bg-gradient-to-r from-slate-900 to-slate-800 text-white hover:to-slate-700 shadow-slate-500/30 hover:shadow-slate-500/50 border border-transparent;
   }
   .btn-secondary {
-    @apply bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 hover:text-slate-900;
+    @apply bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 hover:text-slate-900 hover:border-slate-300 shadow-slate-200/50;
   }
+  .btn-action {
+    @apply bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-100;
+  }
+  
+  /* Specialized Buttons */
   .btn-google {
-    @apply bg-white text-gray-700 border border-gray-200 hover:bg-gray-50;
+    @apply bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 shadow-none hover:shadow-md transition-shadow;
   }
   .btn-upgrade {
-    @apply bg-gradient-to-r from-amber-500 to-orange-600 text-white hover:shadow-lg hover:shadow-orange-200 border-0;
+    @apply bg-gradient-to-r from-amber-500 to-orange-600 text-white hover:shadow-orange-500/40 border-0 shadow-orange-500/20;
   }
+
+  /* Badges */
   .badge {
-    @apply px-3 py-1 rounded-full text-xs font-semibold tracking-wide uppercase;
+    @apply px-3 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase ring-1 ring-inset;
   }
   .badge-socio7x7 {
-    @apply bg-slate-100 text-slate-600 border border-slate-200;
+    @apply bg-slate-100 text-slate-600 ring-slate-500/20;
   }
   .badge-pro {
-    @apply bg-indigo-50 text-indigo-700 border border-indigo-100;
+    @apply bg-indigo-50 text-indigo-700 ring-indigo-700/20 shadow-sm shadow-indigo-100;
   }
   .badge-admin {
-    @apply bg-rose-50 text-rose-700 border border-rose-100;
+    @apply bg-rose-50 text-rose-700 ring-rose-600/20;
+  }
+
+  /* Form Elements */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="tel"],
+  input[type="date"],
+  input[type="time"],
+  textarea,
+  select {
+    @apply transition-all duration-200 border-slate-200 bg-white/50 focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-slate-800 placeholder:text-slate-400 font-medium;
   }
 }
 
-/* Custom Styles */
-body {
-  font-family: "Inter", sans-serif;
-  @apply bg-slate-50 text-slate-600 antialiased;
+/* Animations */
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in-up {
+  animation: fade-in-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-h1, h2, h3, h4, h5, h6 {
-  font-family: 'Outfit', sans-serif;
-  @apply text-slate-900;
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+.animate-scale-in {
+  animation: scale-in 0.2s ease-out forwards;
 }
 
+@keyframes pulse-soft {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.05); }
+}
+
+/* Custom UI Components */
 #whatsapp-button {
-  position: fixed;
-  bottom: 2rem;
-  right: 2rem;
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
-  transition: transform 0.2s ease-in-out;
-  z-index: 1000;
-}
-#whatsapp-button:hover {
-  transform: scale(1.1);
+  @apply fixed bottom-8 right-8 w-14 h-14 rounded-full shadow-2xl transition-transform duration-300 z-50 hover:scale-110 active:scale-90;
+  box-shadow: 0 10px 25px -5px rgba(37, 211, 102, 0.5);
 }
 #whatsapp-button img {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
+  @apply w-full h-full rounded-full;
 }
 
-@keyframes gradient-animation {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
+/* Auth Container Dynamic Background */
+@keyframes gradient-move {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
 #auth-container {
-  background: linear-gradient(-45deg, #f9fafb, #f3f4f6, #e5e7eb, #d1d5db);
-  background-size: 400% 400%;
-  animation: gradient-animation 20s ease infinite;
+  background: linear-gradient(-45deg, #eff6ff, #f5f3ff, #eef2ff, #f8fafc);
+  background-size: 300% 300%;
+  animation: gradient-move 15s ease infinite;
 }
 
 .auth-form-wrapper {
-  background-color: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-radius: 1rem;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1),
-    0 8px 10px -6px rgb(0 0 0 / 0.1);
-  width: 100%;
-  max-width: 420px;
-  padding: 2.5rem;
-  animation: fade-in-up 0.6s ease-out forwards;
-  opacity: 0;
+  @apply bg-white/80 backdrop-blur-2xl rounded-3xl border border-white p-10 w-full max-w-[440px] shadow-2xl shadow-indigo-100/50;
+  animation: scale-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-@keyframes fade-in-up {
-  from {
-    opacity: 0;
-    transform: translateY(25px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.form-container.hidden {
-  display: none;
-}
-
-@keyframes form-fade {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
+/* Utility Animations */
 .form-fade-in {
-  animation: form-fade 0.4s ease-in-out forwards;
+  animation: fade-in-up 0.4s ease-out forwards;
 }
 
-/* Utils for visibility toggling */
-#app-screen,
-#profile-screen,
-#loading-screen,
-#auth-container {
+/* Screen Transitions */
+.screen-enter {
+  animation: fade-in-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.screen-exit {
+  opacity: 0;
   display: none;
 }
+
