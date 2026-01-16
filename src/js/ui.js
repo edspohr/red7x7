@@ -602,7 +602,8 @@ export const renderDirectory = (
   users,
   currentUser,
   searchTerm = "",
-  peopleMetSet = new Set()
+  peopleMetSet = new Set(),
+  unlockedContacts = {} // [NEW] Accept unlocked contacts
 ) => {
   const list = document.getElementById("directory-list");
   if (!list) return;
@@ -682,11 +683,12 @@ export const renderDirectory = (
       // STRICT PRIVACY RULES
       // 1. Admin: Sees everything
       // 2. Self: Sees own data
-      // 3. Pro: Sees check "unlockedContacts" logic (hasMet)
+      // 3. Pro: Sees check "unlockedContacts" logic (hasMet OR unlockedContacts[id])
       // 4. Socio7x7: Sees names/company but NO contact info unless it's their own
 
+      const isUnlocked = unlockedContacts && unlockedContacts[user.id];
       const canViewDetails =
-        isAdminUser || isSelf || (isPro(currentUser) && hasMet);
+        isAdminUser || isSelf || (isPro(currentUser) && (hasMet || isUnlocked));
 
       if (canViewDetails) {
         contactDetailsHTML = `
@@ -746,13 +748,39 @@ export const renderDirectory = (
       } else {
         // Locked State
         let lockedMessage = "Hazte Pro para ver datos";
-        if (isSocio(currentUser)) lockedMessage = "Plan Socio: Vista limitada";
+        let actionButton = "";
+
+        if (isSocio(currentUser)) {
+          lockedMessage = "Plan Socio: Vista limitada";
+        } else if (isPro(currentUser)) {
+          lockedMessage = "Contacto Bloqueado";
+          // Show Unlock Button
+          const requestsLeft = currentUser.contactRequestsLeft || 0;
+          const isOutOfCredits = requestsLeft <= 0;
+
+          actionButton = `
+                <button class="unlock-contact-btn mt-3 w-full py-2 px-4 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-2"
+                    data-uid="${user.id}" data-name="${user.name}" ${
+            isOutOfCredits ? "disabled" : ""
+          }>
+                    <i data-lucide="${
+                      isOutOfCredits ? "lock" : "lock-open"
+                    }" class="w-3.5 h-3.5"></i>
+                    ${
+                      isOutOfCredits
+                        ? "Sin créditos"
+                        : "Desbloquear (1 crédito)"
+                    }
+                </button>
+             `;
+        }
 
         contactDetailsHTML = `
             <div class="mt-auto pt-8 pb-2 text-center">
                  <div class="inline-flex flex-col items-center justify-center p-4 rounded-xl bg-slate-50 border border-slate-100 w-full group-hover:bg-slate-100/50 transition-colors">
                     <i data-lucide="lock" class="w-5 h-5 text-slate-300 mb-2"></i>
                     <p class="text-xs text-slate-400 font-medium">${lockedMessage}</p>
+                    ${actionButton}
                  </div>
             </div>`;
       }
@@ -893,6 +921,92 @@ export const renderDashboardStats = (statsData, currentUser) => {
     statsContainer.appendChild(card);
   });
   refreshIcons();
+};
+
+// --- Admin User Table Helper ---
+const populateAdminUserTable = (users) => {
+  const tbody = document.getElementById("admin-users-table-body");
+  if (!tbody) return;
+
+  tbody.innerHTML = "";
+
+  const sortedUsers = Object.values(users).sort((a, b) =>
+    (a.name || "").localeCompare(b.name || "")
+  );
+
+  sortedUsers.forEach((user) => {
+    const tr = document.createElement("tr");
+    tr.className = "hover:bg-gray-50 transition-colors";
+
+    // 1. User Info
+    const tdUser = document.createElement("td");
+    tdUser.className = "py-3 px-4";
+    tdUser.innerHTML = `
+      <div class="flex items-center">
+        <div class="h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold mr-3 text-xs">
+          ${
+            getAvatarUrl(user).includes("http")
+              ? `<img src="${getAvatarUrl(
+                  user
+                )}" class="h-8 w-8 rounded-full object-cover">`
+              : (user.name || "U").charAt(0).toUpperCase()
+          }
+        </div>
+        <div>
+          <div class="font-medium text-gray-900">${
+            user.name || "Sin Nombre"
+          }</div>
+          <div class="text-xs text-gray-500">${user.email || ""}</div>
+        </div>
+      </div>
+    `;
+
+    // 2. Role Selector
+    const tdRole = document.createElement("td");
+    tdRole.className = "py-3 px-4";
+    const select = document.createElement("select");
+    select.className =
+      "admin-table-role-select text-sm border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500";
+    select.setAttribute("data-uid", user.id);
+
+    // Options
+    ["socio7x7", "pro", "admin"].forEach((role) => {
+      const opt = document.createElement("option");
+      opt.value = role;
+      opt.text = role.charAt(0).toUpperCase() + role.slice(1);
+      if (user.role === role) opt.selected = true;
+      select.appendChild(opt);
+    });
+    tdRole.appendChild(select);
+
+    // 3. Details (Company/Position)
+    const tdDetails = document.createElement("td");
+    tdDetails.className = "py-3 px-4 text-sm text-gray-500";
+    tdDetails.innerHTML = `
+      <div class="font-medium">${user.company || "-"}</div>
+      <div class="text-xs">${user.position || ""}</div>
+    `;
+
+    // 4. Actions
+    const tdActions = document.createElement("td");
+    tdActions.className = "py-3 px-4 text-right";
+    tdActions.innerHTML = `
+      <button class="admin-table-delete-btn p-1 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors" 
+              data-uid="${user.id}" data-name="${user.name}">
+        <i data-lucide="trash-2" class="w-4 h-4"></i>
+      </button>
+    `;
+
+    tr.appendChild(tdUser);
+    tr.appendChild(tdRole);
+    tr.appendChild(tdDetails);
+    tr.appendChild(tdActions);
+
+    tbody.appendChild(tr);
+  });
+
+  // Re-render icons for new buttons
+  if (window.lucide) window.lucide.createIcons();
 };
 
 export const renderAdminPanels = (currentUser, users = {}) => {
@@ -1054,5 +1168,50 @@ export const closeScanner = () => {
     html5QrcodeScanner.clear().catch((e) => console.error(e));
     // We don't nullify to reuse? Actually clearer to nullify/re-init often safer for cameras
     // html5QrcodeScanner = null;
+  }
+};
+
+// --- Onboarding Logic ---
+export const renderOnboarding = (currentUser) => {
+  const key = `onboarding_seen_${currentUser.id}`;
+  if (localStorage.getItem(key) === "true") return;
+
+  const modal = document.getElementById("onboarding-modal");
+  if (!modal) return;
+
+  modal.classList.remove("hidden");
+  modal.classList.add("flex");
+
+  // Setup steps
+  const steps = modal.querySelectorAll(".onboarding-step");
+  let currentStep = 1;
+
+  // Reset view
+  steps.forEach((s) => s.classList.add("hidden"));
+  document.getElementById("onboarding-step-1").classList.remove("hidden");
+
+  // Listeners for Next buttons
+  modal.querySelectorAll(".next-step-btn").forEach((btn) => {
+    btn.onclick = (e) => {
+      const next = e.target.getAttribute("data-next");
+      document
+        .getElementById(`onboarding-step-${currentStep}`)
+        .classList.add("hidden");
+      document
+        .getElementById(`onboarding-step-${next}`)
+        .classList.remove("hidden");
+      currentStep = next;
+    };
+  });
+
+  // Finish
+  const finishBtn = document.getElementById("finish-onboarding");
+  if (finishBtn) {
+    finishBtn.onclick = () => {
+      localStorage.setItem(key, "true");
+      modal.classList.add("hidden");
+      modal.classList.remove("flex");
+      showToast("¡Listo! Disfruta de Red7x7", "success");
+    };
   }
 };

@@ -778,6 +778,7 @@
     </div>
 
     <!-- QR Scanner Modal -->
+    <!-- Scanner Modal -->
     <div id="scanner-modal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-90 z-50 flex-col items-center justify-center p-4">
         <div class="bg-white rounded-2xl p-6 w-full max-w-md relative shadow-2xl">
             <button id="close-scanner-btn" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
@@ -786,6 +787,44 @@
             <h3 class="text-xl font-bold text-center mb-4 text-slate-800">Escáner de Asistencia</h3>
             <div id="reader" class="w-full bg-black rounded-lg overflow-hidden h-64"></div>
             <p id="scanner-result" class="text-center mt-4 text-sm font-medium text-slate-600">Apunta la cámara al código QR...</p>
+        </div>
+    </div>
+
+    <!-- Onboarding Modal -->
+    <div id="onboarding-modal" class="hidden fixed inset-0 bg-indigo-900/40 backdrop-blur-sm z-50 items-center justify-center p-4 animate-scale-in">
+        <div class="bg-white rounded-3xl p-8 w-full max-w-lg shadow-2xl relative text-center">
+            <div id="onboarding-step-1" class="onboarding-step">
+                <div class="bg-indigo-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <i data-lucide="rocket" class="w-10 h-10 text-indigo-600"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-slate-900 mb-2 font-heading">¡Bienvenido a Red7x7!</h2>
+                <p class="text-slate-600 mb-8 leading-relaxed">
+                    Estás a punto de entrar a una comunidad de élite. Tu red de contactos es tu mayor patrimonio activo. Aquí la hacemos crecer.
+                </p>
+                <button class="btn btn-primary w-full next-step-btn" data-next="2">Comenzar Tour</button>
+            </div>
+
+            <div id="onboarding-step-2" class="onboarding-step hidden">
+                <div class="bg-fuchsia-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <i data-lucide="qr-code" class="w-10 h-10 text-fuchsia-600"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-slate-900 mb-2 font-heading">Tu Pasaporte Digital</h2>
+                <p class="text-slate-600 mb-8 leading-relaxed">
+                    En tu <strong>Perfil</strong> encontrarás tu código QR único. Presentalo en los eventos presenciales para hacer Check-in y desbloquear contactos automáticamente.
+                </p>
+                <button class="btn btn-primary w-full next-step-btn" data-next="3">Siguiente</button>
+            </div>
+
+             <div id="onboarding-step-3" class="onboarding-step hidden">
+                <div class="bg-emerald-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <i data-lucide="users" class="w-10 h-10 text-emerald-600"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-slate-900 mb-2 font-heading">Privacidad Inteligente</h2>
+                <p class="text-slate-600 mb-8 leading-relaxed">
+                    Solo podrás ver los datos de contacto de quienes <strong>hayas conocido</strong> en eventos o desbloqueado con tus créditos mensuales.
+                </p>
+                <button id="finish-onboarding" class="btn btn-primary w-full shadow-emerald-500/30 bg-gradient-to-r from-emerald-500 to-teal-600 border-none">¡Entendido, vamos!</button>
+            </div>
         </div>
     </div>
 

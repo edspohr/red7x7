@@ -45,6 +45,7 @@ import {
   renderProfileForm,
   renderHeader,
   openScanner,
+  renderOnboarding,
 } from "./js/ui.js";
 import { sounds } from "./js/sound.js";
 import { handleProcessMeetingAI } from "./js/ai.js";
@@ -130,6 +131,9 @@ setOnLoginSuccess(async (user) => {
   try {
     state.users = await fetchDirectory();
     await refreshUI();
+
+    // Trigger Onboarding (only if new user/checks localStorage)
+    setTimeout(() => renderOnboarding(user), 1500); // Slight delay for effect
   } catch (e) {
     console.error("Init Data Error", e);
     // We generally don't want to stop the app here, but maybe show a toast
@@ -221,12 +225,13 @@ const refreshUI = async () => {
     state.activeTab
   );
 
-  // Pass peopleMetSet to directory for "Shared Meeting" logic
+  // Pass peopleMetSet AND unlockedContacts to directory
   renderDirectory(
     users,
     currentUser,
     document.getElementById("search-directory")?.value || "",
-    peopleMetSet
+    peopleMetSet,
+    state.unlockedContacts // [NEW] Pass unlocked contacts
   );
 
   renderAdminPanels(currentUser, users);
