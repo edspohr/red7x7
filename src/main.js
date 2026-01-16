@@ -115,6 +115,9 @@ setTimeout(() => {
 setOnLoginSuccess(async (user) => {
   state.currentUser = user;
 
+  // [DEBUG] Show Role
+  showToast(`DEBUG: Login como ${user.role} (${user.email})`, "info");
+
   // Initialize UI Elements that were in initializeAppUI
   const waBtn = document.getElementById("whatsapp-button");
   if (waBtn) waBtn.classList.remove("hidden");
@@ -136,7 +139,10 @@ setOnLoginSuccess(async (user) => {
     setTimeout(() => renderOnboarding(user), 1500); // Slight delay for effect
   } catch (e) {
     console.error("Init Data Error", e);
-    // We generally don't want to stop the app here, but maybe show a toast
+    // [DEBUG] Show Error
+    showToast(`DEBUG: Error cargando datos: ${e.message}`, "error");
+    // Ensure UI refreshes anyway so Admin Panels might show up
+    await refreshUI();
   }
 
   // 2. Subscribe to Data
