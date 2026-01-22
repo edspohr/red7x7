@@ -31,7 +31,7 @@ const getAvatarUrl = (user) => {
     .slice(0, 2);
   // Using UI Avatars service for nice initials avatars
   return `https://ui-avatars.com/api/?name=${encodeURIComponent(
-    initials
+    initials,
   )}&background=4B5563&color=fff&size=100&bold=true`;
 };
 
@@ -63,7 +63,7 @@ export const showAuthForm = (form) => {
     target.container.addEventListener(
       "animationend",
       () => target.container.classList.remove("form-fade-in"),
-      { once: true }
+      { once: true },
     );
   }
 };
@@ -114,7 +114,7 @@ export const showScreen = (screen) => {
       () => {
         target.classList.remove("screen-enter");
       },
-      { once: true }
+      { once: true },
     );
   }
 
@@ -152,16 +152,16 @@ export const renderHeader = (currentUser) => {
     const normalizedRole = isAdmin(currentUser)
       ? "admin"
       : isPro(currentUser)
-      ? "pro"
-      : "socio7x7";
+        ? "pro"
+        : "socio7x7";
     badge.className = `badge badge-${normalizedRole} mr-2`;
     badge.textContent = isSocio(currentUser)
       ? "Socio7x7"
       : isPro(currentUser)
-      ? "Pro"
-      : isAdmin(currentUser)
-      ? "Admin"
-      : currentUser.role;
+        ? "Pro"
+        : isAdmin(currentUser)
+          ? "Admin"
+          : currentUser.role;
     userEmailRoleEl.appendChild(badge);
 
     // Add Email or extra info text node
@@ -170,7 +170,7 @@ export const renderHeader = (currentUser) => {
         ? `${currentUser.email} | ${
             currentUser.contactRequestsLeft || 0
           } créditos`
-        : currentUser.email
+        : currentUser.email,
     );
     userEmailRoleEl.appendChild(infoText);
   }
@@ -222,7 +222,7 @@ export const renderAnnouncements = (announcements, currentUser) => {
   list.innerHTML = "";
 
   const sorted = [...announcements].sort((a, b) =>
-    b.isPinned === a.isPinned ? 0 : b.isPinned ? 1 : -1
+    b.isPinned === a.isPinned ? 0 : b.isPinned ? 1 : -1,
   );
 
   if (sorted.length === 0) {
@@ -251,8 +251,8 @@ export const renderAnnouncements = (announcements, currentUser) => {
                     <button data-id="${
                       ann.id
                     }" class="toggle-pin-btn p-1 text-gray-500 hover:text-gray-800" title="${
-        ann.isPinned ? "Quitar Chincheta" : "Fijar con Chincheta"
-      }">
+                      ann.isPinned ? "Quitar Chincheta" : "Fijar con Chincheta"
+                    }">
                         <i data-lucide="${
                           ann.isPinned ? "pin-off" : "pin"
                         }" class="w-4 h-4"></i>
@@ -324,9 +324,9 @@ const getGoogleCalendarUrl = (meeting) => {
   const end = `${dateStr}T${endStr}`;
 
   return `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(
-    meeting.title
+    meeting.title,
   )}&dates=${start}/${end}&details=${encodeURIComponent(
-    meeting.summary || ""
+    meeting.summary || "",
   )}&location=${encodeURIComponent(meeting.location || "")}&sf=true&output=xml`;
 };
 
@@ -338,7 +338,7 @@ const linkify = (text) => {
   return text.replace(
     urlRegex,
     (url) =>
-      `<a href="${url}" target="_blank" class="text-indigo-600 hover:underline break-all">${url}</a>`
+      `<a href="${url}" target="_blank" class="text-indigo-600 hover:underline break-all">${url}</a>`,
   );
 };
 
@@ -347,7 +347,7 @@ export const renderMeetings = (
   users,
   currentUser,
   showEditModal,
-  activeTab = "upcoming"
+  activeTab = "upcoming",
 ) => {
   const list = document.getElementById("meetings-list");
   if (!list) return;
@@ -389,7 +389,7 @@ export const renderMeetings = (
   sorted.forEach((meeting) => {
     // Filter: Current user must be in participants OR admin
     const isParticipant = (meeting.participants || []).includes(
-      currentUser.uid || currentUser.id
+      currentUser.uid || currentUser.id,
     );
     const isAdminUser = isAdmin(currentUser);
 
@@ -468,7 +468,7 @@ export const renderMeetings = (
                                 </div>
                             </div>
                         </div>
-                    `
+                    `,
                       )
                       .join("")}
                 </div>
@@ -526,8 +526,8 @@ export const renderMeetings = (
                             }</h3>
                             <button class="copy-details-btn p-1.5 text-slate-300 hover:text-indigo-600 hover:bg-slate-50 rounded transition-colors" title="Copiar detalles" 
                                 data-text="${meeting.title} - ${dDate} ${
-      meeting.time || ""
-    } @ ${meeting.location || ""}">
+                                  meeting.time || ""
+                                } @ ${meeting.location || ""}">
                                 <i data-lucide="copy" class="w-4 h-4"></i>
                             </button>
                          </div>
@@ -547,7 +547,7 @@ export const renderMeetings = (
                         ? `
                     <div class="mt-4 md:mt-0 w-full md:w-auto">
                         <a href="${getGoogleCalendarUrl(
-                          meeting
+                          meeting,
                         )}" target="_blank" class="w-full md:w-auto flex items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-bold text-white shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/40 hover:bg-slate-800 transition-all active:scale-95">
                             <i data-lucide="calendar-plus" class="w-4 h-4"></i> Agendar
                         </a>
@@ -578,7 +578,7 @@ export const renderMeetings = (
   if (showEditModal) {
     document.querySelectorAll(".edit-meeting-btn").forEach((btn) => {
       btn.addEventListener("click", (e) =>
-        showEditModal(e.currentTarget.dataset.id)
+        showEditModal(e.currentTarget.dataset.id),
       );
     });
   }
@@ -591,7 +591,7 @@ export const renderMeetings = (
         e.currentTarget.classList.add("text-green-600");
         setTimeout(
           () => e.currentTarget.classList.remove("text-green-600"),
-          1000
+          1000,
         );
       });
     });
@@ -603,7 +603,7 @@ export const renderDirectory = (
   currentUser,
   searchTerm = "",
   peopleMetSet = new Set(),
-  unlockedContacts = {} // [NEW] Accept unlocked contacts
+  unlockedContacts = {}, // [NEW] Accept unlocked contacts
 ) => {
   const list = document.getElementById("directory-list");
   if (!list) return;
@@ -615,7 +615,7 @@ export const renderDirectory = (
     "w-full text-center text-gray-500 mb-4 text-sm col-span-full";
   const totalUsers = Object.values(users).length;
   const matchCount = Object.values(users).filter(
-    (u) => u.name && u.name.toLowerCase().includes(searchTerm.toLowerCase())
+    (u) => u.name && u.name.toLowerCase().includes(searchTerm.toLowerCase()),
   ).length;
   countEl.innerHTML = `<span class="font-bold">${matchCount}</span> miembros encontrados ${
     searchTerm ? "(filtrado)" : `de ${totalUsers}`
@@ -642,7 +642,7 @@ export const renderDirectory = (
 
   // Sort Alphabetically
   const sortedUsers = Object.values(users).sort((a, b) =>
-    (a.name || "").localeCompare(b.name || "")
+    (a.name || "").localeCompare(b.name || ""),
   );
 
   sortedUsers.forEach((user) => {
@@ -688,7 +688,7 @@ export const renderDirectory = (
 
       const isUnlocked = unlockedContacts && unlockedContacts[user.id];
       const canViewDetails =
-        isAdminUser || isSelf || (isPro(currentUser) && (hasMet || isUnlocked));
+        isAdminUser || isSelf || hasMet || (isPro(currentUser) && isUnlocked);
 
       if (canViewDetails) {
         contactDetailsHTML = `
@@ -761,8 +761,8 @@ export const renderDirectory = (
           actionButton = `
                 <button class="unlock-contact-btn mt-3 w-full py-2 px-4 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-2"
                     data-uid="${user.id}" data-name="${user.name}" ${
-            isOutOfCredits ? "disabled" : ""
-          }>
+                      isOutOfCredits ? "disabled" : ""
+                    }>
                     <i data-lucide="${
                       isOutOfCredits ? "lock" : "lock-open"
                     }" class="w-3.5 h-3.5"></i>
@@ -931,7 +931,7 @@ const populateAdminUserTable = (users) => {
   tbody.innerHTML = "";
 
   const sortedUsers = Object.values(users).sort((a, b) =>
-    (a.name || "").localeCompare(b.name || "")
+    (a.name || "").localeCompare(b.name || ""),
   );
 
   sortedUsers.forEach((user) => {
@@ -947,7 +947,7 @@ const populateAdminUserTable = (users) => {
           ${
             getAvatarUrl(user).includes("http")
               ? `<img src="${getAvatarUrl(
-                  user
+                  user,
                 )}" class="h-8 w-8 rounded-full object-cover">`
               : (user.name || "U").charAt(0).toUpperCase()
           }
@@ -1033,13 +1033,13 @@ export const renderAdminPanels = (currentUser, users = {}) => {
 
     // Render checkboxes with USERS
     const participantsList = document.getElementById(
-      "meeting-participants-list"
+      "meeting-participants-list",
     );
     if (participantsList) {
       participantsList.innerHTML = "";
       // Sort Alphabetically
       const sortedUsers = Object.values(users).sort((a, b) =>
-        (a.name || "").localeCompare(b.name || "")
+        (a.name || "").localeCompare(b.name || ""),
       );
 
       sortedUsers.forEach((user) => {
@@ -1049,8 +1049,8 @@ export const renderAdminPanels = (currentUser, users = {}) => {
                           user.id
                         }">
                         <span class="text-sm">${user.name} (${
-          user.company || "N/A"
-        })</span>
+                          user.company || "N/A"
+                        })</span>
                     </label>`;
       });
     }
@@ -1145,7 +1145,7 @@ export const openScanner = (onScanSuccess) => {
     html5QrcodeScanner = new Html5QrcodeScanner(
       "reader",
       { fps: 10, qrbox: { width: 250, height: 250 } },
-      /* verbose= */ false
+      /* verbose= */ false,
     );
     html5QrcodeScanner.render(
       (decodedText) => {
@@ -1154,7 +1154,7 @@ export const openScanner = (onScanSuccess) => {
       },
       (errorMessage) => {
         // ignore
-      }
+      },
     );
   }
 };

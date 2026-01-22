@@ -1,14 +1,26 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 export async function handleProcessMeetingAI(allUsers) {
-  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+  let apiKey;
+  try {
+    apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+  } catch (e) {
+    console.error("Error accediendo a env vars:", e);
+  }
 
   if (!apiKey) {
     alert("API Key de Gemini no configurada. Por favor revisa tu archivo .env");
     return;
   }
 
-  const notes = document.getElementById("meeting-notes-text").value;
+  const notesInput = document.getElementById("meeting-notes-text");
+  if (!notesInput) {
+    console.warn("Input 'meeting-notes-text' no encontrado en el DOM");
+    alert("Error interno: No se encuentra el campo de notas.");
+    return;
+  }
+  const notes = notesInput.value;
+
   if (!notes) {
     alert("Por favor, pega las notas de la reunión en el área de texto.");
     return;
@@ -64,11 +76,11 @@ export async function handleProcessMeetingAI(allUsers) {
         const foundEntry = Object.entries(allUsers).find(
           ([id, user]) =>
             user.name.toLowerCase().includes(nameFromAI.toLowerCase()) ||
-            nameFromAI.toLowerCase().includes(user.name.toLowerCase())
+            nameFromAI.toLowerCase().includes(user.name.toLowerCase()),
         );
         if (foundEntry) {
           const checkbox = document.querySelector(
-            `.participant-checkbox[value="${foundEntry[0]}"]`
+            `.participant-checkbox[value="${foundEntry[0]}"]`,
           );
           if (checkbox) {
             checkbox.checked = true;
